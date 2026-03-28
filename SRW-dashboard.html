@@ -573,7 +573,7 @@ const TODAY = new Date();
 
 const TASKS = [
   { deliverable: "Provide as-builts / CAD backgrounds to ALL consultants", requiredBy: "Basile, Heleo, REB", priority: "DONE", status: "COMPLETE", dateDelivered: "Mar 2026", notes: "Delivered to all consultants.", firms: ["Basile Studio","Heleo","REB Design"] },
-  { deliverable: "Provide equipment list (food service + mechanical)", requiredBy: "Basile + REB", priority: "URGENT", status: "PENDING", dateDelivered: null, notes: "Required per Basile §3.2", firms: ["Basile Studio","REB Design"] },
+  { deliverable: "Provide equipment list (food service + mechanical)", requiredBy: "Basile + REB", priority: "DONE", status: "COMPLETE", dateDelivered: "Mar 2026", notes: "Required per Basile §3.2", firms: ["Basile Studio","REB Design"] },
   { deliverable: "Provide written program (objectives, constraints, schedule)", requiredBy: "Basile + Heleo", priority: "URGENT", status: "PENDING", dateDelivered: null, notes: "Include target start + completion dates", firms: ["Basile Studio","Heleo"] },
   { deliverable: "Confirm construction start date + substantial completion target", requiredBy: "All consultants", priority: "URGENT", status: "PENDING", dateDelivered: null, notes: "Heleo assumes mid-summer 2026 opening", firms: ["Basile Studio","Heleo","REB Design"] },
   { deliverable: "Confirm AOR contact provided to Basile", requiredBy: "Basile Studio", priority: "DONE", status: "COMPLETE", dateDelivered: "Oct 2025", notes: "Heleo confirmed as AOR", firms: ["Basile Studio"] },
@@ -613,7 +613,7 @@ const PAYMENTS = [
   { date: "Dec 2025", firm: "Heleo", invoice: "167744", description: "Schematic Design 50% — Kickoff, plans setup, code analysis", amount: 4000, method: "ACH", status: "PAID", notes: "Paid in full | SD phase 50% complete" },
   { date: "Jan 2026", firm: "Heleo", invoice: "167756", description: "Schematic Design — balance", amount: 4000, method: "ACH", status: "PAID", notes: "Paid in full | SD phase 100% complete" },
   { date: "Feb 2026", firm: "Heleo", invoice: "167776", description: "Design Development 30%", amount: 4200, method: "ACH", status: "PAID", notes: "Paid in full | DD phase 30% complete" },
-  { date: "Mar 2026", firm: "Heleo", invoice: "167792", description: "Design Development + Patterson Structural Retainer (cost+15%)", amount: 7400, method: "—", status: "UNPAID", notes: "⚠️ UNPAID — Due upon receipt" },
+  { date: "Mar 2026", firm: "Heleo", invoice: "167792", description: "Design Development + Patterson Structural Retainer (cost+15%)", amount: 7400, method: "Check #1012", status: "PAID", notes: "✅ Paid Mar 2026 — Check #1012" },
 ];
 
 const PHASES = [
@@ -718,7 +718,7 @@ const PERMITS = [
 // ─── BUDGET DATA ────────────────────────────────────────────────────────────
 const BUDGET = [
   { firm: "Basile Studio", contract: 124460, paid: 37067, outstanding: 10705 },
-  { firm: "Heleo",         contract: 69000,  paid: 18200, outstanding: 7400 },
+  { firm: "Heleo",         contract: 69000,  paid: 25600, outstanding: 0 },
   { firm: "REB Design",    contract: 17500,  paid: 8750,  outstanding: 0 },
 ];
 
