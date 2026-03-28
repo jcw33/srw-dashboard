@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>She Rode West — Project Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #f5f0ea;
+      --bg-card: #ffffff;
+      --header-bg: #3b2a1a;
+      --header-accent: #c47e3a;
+      --text-primary: #2c1f0f;
+      --text-secondary: #7a6652;
+      --text-on-dark: #f5f0ea;
+      --urgent: #c0392b;
+      --high: #d4860a;
+      --ongoing: #2471a3;
+      --done: #1e8449;
+      --pending-bg: #fdf6e3;
+      --complete-bg: #eafaf1;
+      --gap: 16px;
+      --radius: 10px;
+      --shadow: 0 2px 8px rgba(60,30,10,0.09);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.5;
+      font-size: 14px;
+    }
+    .dashboard-container { max-width: 1380px; margin: 0 auto; padding: var(--gap); }
+
+    /* HEADER */
+    .dashboard-header {
+      background: var(--header-bg);
+      color: var(--text-on-dark);
+      padding: 20px 28px;
+      border-radius: var(--radius);
+      margin-bottom: var(--gap);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    .header-left h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.5px; color: #f5e8d5; }
+    .header-left p { font-size: 12px; color: rgba(245,232,213,0.65); margin-top: 2px; }
+    .header-badge {
+      display: inline-block;
+      background: var(--header-accent);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .filter-group { display: flex; flex-direction: column; gap: 2px; }
+    .filter-group label { font-size: 10px; color: rgba(245,232,213,0.6); text-transform: uppercase; letter-spacing: 0.5px; }
+    .filter-group select {
+      padding: 5px 10px;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 5px;
+      background: rgba(255,255,255,0.1);
+      color: var(--text-on-dark);
+      font-size: 12px;
+      cursor: pointer;
+      min-width: 120px;
+    }
+    .filter-group select option { background: #3b2a1a; color: #f5f0ea; }
+    .btn-reset {
+      padding: 6px 14px;
+      background: rgba(196,126,58,0.3);
+      border: 1px solid var(--header-accent);
+      color: var(--text-on-dark);
+      border-radius: 5px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-top: 14px;
+      white-space: nowrap;
+    }
+    .btn-reset:hover { background: var(--header-accent); }
+
+    /* KPI ROW */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: var(--gap);
+      margin-bottom: var(--gap);
+    }
+    .kpi-card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      box-shadow: var(--shadow);
+      border-top: 3px solid transparent;
+    }
+    .kpi-card.urgent { border-top-color: var(--urgent); }
+    .kpi-card.high    { border-top-color: var(--high); }
+    .kpi-card.ongoing { border-top-color: var(--ongoing); }
+    .kpi-card.done    { border-top-color: var(--done); }
+    .kpi-card.budget  { border-top-color: var(--header-accent); }
+    .kpi-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .kpi-value { font-size: 30px; font-weight: 700; color: var(--text-primary); }
+    .kpi-sub   { font-size: 11px; color: var(--text-secondary); margin-top: 3px; }
+
+    /* SECTION TITLES */
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+    }
+
+    /* CHART ROW */
+    .chart-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: var(--gap);
+      margin-bottom: var(--gap);
+    }
+    .chart-container {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      box-shadow: var(--shadow);
+    }
+    .chart-container canvas { max-height: 230px; }
+
+    /* TWO-COL ROW */
+    .two-col { display: grid; grid-template-columns: 1.2fr 1fr; gap: var(--gap); margin-bottom: var(--gap); }
+    .full-width { margin-bottom: var(--gap); }
+
+    /* DEADLINE / EVENT CARDS */
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 10px;
+    }
+    .event-card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+      border-left: 4px solid #ccc;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .event-card.overdue   { border-left-color: var(--urgent); }
+    .event-card.imminent  { border-left-color: var(--high); }
+    .event-card.upcoming  { border-left-color: var(--ongoing); }
+    .event-card.info      { border-left-color: #888; }
+    .event-date { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .event-date.overdue   { color: var(--urgent); }
+    .event-date.imminent  { color: var(--high); }
+    .event-date.upcoming  { color: var(--ongoing); }
+    .event-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+    .event-firm  { font-size: 11px; color: var(--text-secondary); }
+
+    /* TABLES */
+    .table-section {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      box-shadow: var(--shadow);
+      overflow-x: auto;
+    }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    .data-table thead th {
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 2px solid #e8ddd0;
+      color: var(--text-secondary);
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+    .data-table thead th:hover { color: var(--text-primary); }
+    .data-table tbody td { padding: 9px 12px; border-bottom: 1px solid #f0ebe4; vertical-align: top; }
+    .data-table tbody tr:hover { background: #faf7f3; }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+
+    /* STATUS / PRIORITY BADGES */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-urgent   { background: #fdecea; color: var(--urgent); }
+    .badge-high     { background: #fff3e0; color: var(--high); }
+    .badge-ongoing  { background: #e8f4fb; color: var(--ongoing); }
+    .badge-done     { background: #eafaf1; color: var(--done); }
+    .badge-pending  { background: #fdf6e3; color: #7a6000; }
+    .badge-complete { background: #eafaf1; color: var(--done); }
+    .badge-tomorrow { background: #e8f4fb; color: var(--ongoing); }
+    .badge-paid     { background: #eafaf1; color: var(--done); }
+    .badge-unpaid   { background: #fdecea; color: var(--urgent); }
+    .badge-tbd      { background: #f0f0f0; color: #555; }
+    .badge-approved { background: #eafaf1; color: var(--done); }
+    .badge-pending-approval { background: #fdf6e3; color: #7a6000; }
+
+    /* PAYMENT ROW HIGHLIGHT */
+    tr.unpaid-row td { background: #fff8f6; }
+
+    /* BUDGET BARS */
+    .budget-bar-wrap { margin: 6px 0; }
+    .budget-bar-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 3px; }
+    .budget-bar-track { background: #e8ddd0; border-radius: 4px; height: 10px; overflow: hidden; }
+    .budget-bar-fill  { height: 100%; border-radius: 4px; transition: width 0.4s; }
+
+    /* FOOTER */
+    .dashboard-footer {
+      text-align: center;
+      padding: 12px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 8px;
+    }
+
+    /* TABS */
+    .tabs { display: flex; gap: 4px; margin-bottom: 14px; }
+    .tab-btn {
+      padding: 6px 16px;
+      border: 1px solid #e0d5ca;
+      border-radius: 20px;
+      background: transparent;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: var(--header-bg);
+      color: var(--text-on-dark);
+      border-color: var(--header-bg);
+    }
+
+    /* COUNTDOWN STRIP */
+    .countdown-strip {
+      background: var(--header-bg);
+      border-radius: var(--radius);
+      padding: 0;
+      margin-bottom: var(--gap);
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .countdown-cell {
+      padding: 16px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      border-right: 1px solid rgba(255,255,255,0.08);
+      position: relative;
+    }
+    .countdown-cell:last-child { border-right: none; }
+    .countdown-cell.primary { background: rgba(196,126,58,0.18); }
+    .countdown-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: rgba(245,232,213,0.55);
+    }
+    .countdown-days {
+      font-size: 36px;
+      font-weight: 800;
+      color: #f5e8d5;
+      line-height: 1;
+    }
+    .countdown-days .days-unit {
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(245,232,213,0.6);
+      margin-left: 3px;
+    }
+    .countdown-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(245,232,213,0.85);
+      margin-top: 1px;
+    }
+    .countdown-date {
+      font-size: 11px;
+      color: rgba(245,232,213,0.45);
+    }
+    .countdown-bar-track {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: rgba(255,255,255,0.07);
+    }
+    .countdown-bar-fill {
+      height: 100%;
+      background: var(--header-accent);
+      transition: width 0.6s ease;
+    }
+    @media (max-width: 900px) {
+      .countdown-strip { grid-template-columns: 1fr 1fr; }
+      .countdown-cell.primary { grid-column: span 2; }
+    }
+    @media (max-width: 600px) {
+      .countdown-strip { grid-template-columns: 1fr; }
+      .countdown-cell.primary { grid-column: span 1; }
+    }
+
+    @media (max-width: 900px) {
+      .chart-row { grid-template-columns: 1fr 1fr; }
+      .two-col   { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .chart-row  { grid-template-columns: 1fr; }
+      .kpi-row    { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media print {
+      body { background: white; }
+      .filters { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="dashboard-container">
+
+  <!-- HEADER -->
+  <header class="dashboard-header">
+    <div class="header-left">
+      <h1>🤠 She Rode West <span class="header-badge">LIVE</span></h1>
+      <p>575 Upas St, San Diego CA 92103 &nbsp;|&nbsp; Project Coordinator: Jon Weber &nbsp;|&nbsp; As of <span id="today-date"></span></p>
+    </div>
+    <div class="filters">
+      <div class="filter-group">
+        <label>Firm</label>
+        <select id="filter-firm" onchange="applyFilters()">
+          <option value="all">All Firms</option>
+          <option value="Basile Studio">Basile Studio</option>
+          <option value="Heleo">Heleo</option>
+          <option value="REB Design">REB Design</option>
+          <option value="Jon Weber">Jon Weber</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Status</label>
+        <select id="filter-status" onchange="applyFilters()">
+          <option value="all">All Statuses</option>
+          <option value="PENDING">Pending</option>
+          <option value="ONGOING">Ongoing</option>
+          <option value="COMPLETE">Complete</option>
+          <option value="TOMORROW">Tomorrow</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Priority</label>
+        <select id="filter-priority" onchange="applyFilters()">
+          <option value="all">All Priorities</option>
+          <option value="URGENT">🔴 Urgent</option>
+          <option value="HIGH">🟡 High</option>
+          <option value="ONGOING">🔵 Ongoing</option>
+          <option value="DONE">✅ Done</option>
+        </select>
+      </div>
+      <button class="btn-reset" onclick="resetFilters()">↺ Reset</button>
+    </div>
+  </header>
+
+  <!-- COUNTDOWN STRIP -->
+  <div class="countdown-strip" id="countdown-strip"></div>
+
+  <!-- KPI CARDS -->
+  <section class="kpi-row">
+    <div class="kpi-card urgent">
+      <div class="kpi-label">Urgent Tasks</div>
+      <div class="kpi-value" id="kpi-urgent">—</div>
+      <div class="kpi-sub">🔴 Require immediate action</div>
+    </div>
+    <div class="kpi-card high">
+      <div class="kpi-label">High Priority</div>
+      <div class="kpi-value" id="kpi-high">—</div>
+      <div class="kpi-sub">🟡 Pending / in progress</div>
+    </div>
+    <div class="kpi-card ongoing">
+      <div class="kpi-label">Open Tasks</div>
+      <div class="kpi-value" id="kpi-open">—</div>
+      <div class="kpi-sub">Total not yet complete</div>
+    </div>
+    <div class="kpi-card done">
+      <div class="kpi-label">Completed</div>
+      <div class="kpi-value" id="kpi-done">—</div>
+      <div class="kpi-sub">Out of <span id="kpi-total">—</span> total tasks</div>
+    </div>
+    <div class="kpi-card budget">
+      <div class="kpi-label">Total Paid</div>
+      <div class="kpi-value" id="kpi-paid">—</div>
+      <div class="kpi-sub">Of $210,960+ committed</div>
+    </div>
+    <div class="kpi-card urgent">
+      <div class="kpi-label">Outstanding</div>
+      <div class="kpi-value" id="kpi-outstanding">—</div>
+      <div class="kpi-sub">Unpaid invoices</div>
+    </div>
+  </section>
+
+  <!-- OPEN ISSUES -->
+  <section class="full-width table-section">
+    <div class="section-title">🚨 Open Issues &amp; Unresolved Questions</div>
+    <div id="open-issues-grid"></div>
+  </section>
+
+  <!-- UPCOMING DEADLINES -->
+  <section class="full-width table-section">
+    <div class="section-title">⏰ Upcoming Events &amp; Deadlines — Next 30 Days</div>
+    <div class="events-grid" id="events-grid"></div>
+  </section>
+
+  <!-- PERMIT TRACKER -->
+  <section class="full-width table-section" style="margin-top:16px;">
+    <div class="section-title">🏛 Permit Tracker</div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Permit</th>
+          <th>Authority</th>
+          <th>Responsible</th>
+          <th>Target Date</th>
+          <th>Status</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody id="permits-tbody"></tbody>
+    </table>
+  </section>
+
+  <!-- TASKS TABLE -->
+  <section class="full-width table-section" style="margin-top:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div class="section-title" style="margin-bottom:0;">📋 Jon's Deliverables — Full Task List</div>
+      <span id="task-count" style="font-size:12px;color:var(--text-secondary);"></span>
+    </div>
+    <div id="tasks-table-wrap"></div>
+  </section>
+
+  <!-- CHARTS ROW -->
+  <section class="chart-row" style="margin-top:var(--gap);">
+    <div class="chart-container">
+      <div class="section-title">Tasks by Status</div>
+      <canvas id="chart-status"></canvas>
+    </div>
+    <div class="chart-container">
+      <div class="section-title">Tasks by Priority</div>
+      <canvas id="chart-priority"></canvas>
+    </div>
+    <div class="chart-container">
+      <div class="section-title">Tasks by Assigned Firm</div>
+      <canvas id="chart-assignee"></canvas>
+    </div>
+  </section>
+
+  <!-- KEY DECISIONS LOG -->
+  <section class="full-width table-section" style="margin-top:16px;">
+    <div class="section-title">✅ Key Decisions Log</div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Decision</th>
+          <th>Decided By</th>
+          <th>Impact</th>
+          <th>Source</th>
+        </tr>
+      </thead>
+      <tbody id="decisions-tbody"></tbody>
+    </table>
+  </section>
+
+  <!-- BUDGET + PHASES -->
+  <div class="two-col" style="margin-top:16px;">
+
+    <!-- BUDGET SUMMARY -->
+    <div class="table-section">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div class="section-title" style="margin-bottom:0;">💰 Budget Summary by Firm</div>
+        <select id="filter-budget-firm" onchange="renderBudget()" style="font-size:12px;padding:4px 8px;border-radius:5px;border:1px solid #e0d5ca;background:#faf7f3;">
+          <option value="all">All Firms</option>
+          <option value="Basile Studio">Basile Studio</option>
+          <option value="Heleo">Heleo</option>
+          <option value="REB Design">REB Design</option>
+        </select>
+      </div>
+      <div id="budget-summary"></div>
+      <div style="margin-top:16px;">
+        <canvas id="chart-budget" style="max-height:180px;"></canvas>
+      </div>
+    </div>
+
+    <!-- PAYMENT LOG -->
+    <div class="table-section">
+      <div class="section-title">💳 Payment History</div>
+      <div id="payment-log"></div>
+    </div>
+  </div>
+
+  <!-- PHASE TRACKER -->
+  <section class="full-width table-section">
+    <div class="section-title">📐 Design & Construction Tracker</div>
+    <table class="data-table" id="phase-table">
+      <thead>
+        <tr>
+          <th>Phase</th>
+          <th>Consultant</th>
+          <th>Duration</th>
+          <th>Fee</th>
+          <th>Start</th>
+          <th>Target Complete</th>
+          <th>Approved?</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody id="phase-tbody"></tbody>
+    </table>
+  </section>
+
+  <!-- PAYMENT SCHEDULE -->
+  <section class="full-width table-section" style="margin-top:16px;">
+    <div class="section-title">🗓 Payment Schedule by Vendor</div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Vendor</th>
+          <th>Trigger / Milestone</th>
+          <th>Amount</th>
+          <th>Due</th>
+          <th>Paid?</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody id="payment-schedule-tbody"></tbody>
+    </table>
+  </section>
+
+  <!-- CONTACT DIRECTORY -->
+  <section class="full-width table-section" style="margin-top:16px;">
+    <div class="section-title">📇 Contact Directory</div>
+    <div id="contacts-grid"></div>
+  </section>
+
+  <footer class="dashboard-footer">
+    She Rode West Project Dashboard &nbsp;·&nbsp; Data as of <span id="footer-date"></span>
+  </footer>
+</div>
+
+<script>
+// ─── DATA ─────────────────────────────────────────────────────────────────────
+
+const TODAY = new Date();
+
+const TASKS = [
+  { deliverable: "Provide as-builts / CAD backgrounds to ALL consultants", requiredBy: "Basile, Heleo, REB", priority: "DONE", status: "COMPLETE", dateDelivered: "Mar 2026", notes: "Delivered to all consultants.", firms: ["Basile Studio","Heleo","REB Design"] },
+  { deliverable: "Provide equipment list (food service + mechanical)", requiredBy: "Basile + REB", priority: "URGENT", status: "PENDING", dateDelivered: null, notes: "Required per Basile §3.2", firms: ["Basile Studio","REB Design"] },
+  { deliverable: "Provide written program (objectives, constraints, schedule)", requiredBy: "Basile + Heleo", priority: "URGENT", status: "PENDING", dateDelivered: null, notes: "Include target start + completion dates", firms: ["Basile Studio","Heleo"] },
+  { deliverable: "Confirm construction start date + substantial completion target", requiredBy: "All consultants", priority: "URGENT", status: "PENDING", dateDelivered: null, notes: "Heleo assumes mid-summer 2026 opening", firms: ["Basile Studio","Heleo","REB Design"] },
+  { deliverable: "Confirm AOR contact provided to Basile", requiredBy: "Basile Studio", priority: "DONE", status: "COMPLETE", dateDelivered: "Oct 2025", notes: "Heleo confirmed as AOR", firms: ["Basile Studio"] },
+  { deliverable: "Provide Heleo address correction (Shelter Island vs Upas)", requiredBy: "Heleo", priority: "DONE", status: "COMPLETE", dateDelivered: "Mar 2026", notes: "Correct project address provided to Heleo.", firms: ["Heleo"] },
+  { deliverable: "Provide site survey (if required)", requiredBy: "Heleo", priority: "DONE", status: "COMPLETE", dateDelivered: "Mar 2026", notes: "Site survey provided to Heleo.", firms: ["Heleo"] },
+  { deliverable: "Coordinate consultant scope contracts for Heleo review", requiredBy: "Heleo", priority: "DONE", status: "COMPLETE", dateDelivered: "Mar 2026", notes: "Scope contracts coordinated and provided to Heleo.", firms: ["Heleo"] },
+  { deliverable: "Approve Phase 1 space plan before Basile moves to Phase 2", requiredBy: "Basile Studio", priority: "DONE", status: "COMPLETE", dateDelivered: "Mar 2026", notes: "Approved — Basile advancing to Phase 2 Schematic Design", firms: ["Basile Studio"] },
+  { deliverable: "Approve Heleo Schematic Design package", requiredBy: "Heleo", priority: "ONGOING", status: "PENDING", dateDelivered: null, notes: "Approval triggers progression to DD", firms: ["Heleo"] },
+  { deliverable: "Approve Heleo Design Development package", requiredBy: "Heleo", priority: "ONGOING", status: "PENDING", dateDelivered: null, notes: "Changes after approval = Additional Services", firms: ["Heleo"] },
+  { deliverable: "Provide timely responses to ALL consultant requests", requiredBy: "All consultants", priority: "ONGOING", status: "ONGOING", dateDelivered: null, notes: "Basile: 14-day max. REB: cooperate timely", firms: ["Basile Studio","Heleo","REB Design"] },
+  { deliverable: "Pay all invoices on time", requiredBy: "All consultants", priority: "ONGOING", status: "ONGOING", dateDelivered: null, notes: "Basile 15 days; Heleo 60 days; REB per terms", firms: ["Basile Studio","Heleo","REB Design"] },
+  { deliverable: "Attend MEP kickoff meeting", requiredBy: "Marino Design Consultants (MEP)", priority: "DONE", status: "COMPLETE", dateDelivered: "3/24/2026", notes: "MEP kickoff held 3/24/26 with Marino Design Consultants. Minutes by Barbara Leon.", firms: ["Heleo"] },
+  { deliverable: "Obtain existing structural plans (permit set) for the building", requiredBy: "Patterson Eng. via Heleo", priority: "URGENT", status: "PENDING", dateDelivered: null, notes: "CRITICAL — needed to assess loads on ground floor slab above parking garage. UPDATE 3/27/26: Confirmed by Brendan Mingle (Suffolk) — L1 is NOT post-tensioned. L2 and above ARE post-tensioned cable slabs. Low impact since building on L1; only relevant if ceiling tie-ins required.", firms: ["Heleo"] },
+  { deliverable: "Confirm stair location finalized (Heleo action — follow up)", requiredBy: "Heleo", priority: "URGENT", status: "COMPLETE", dateDelivered: "3/23/2026", notes: "Heleo to finalize by 3/20/26 — follow up if not received", firms: ["Heleo"] },
+  { deliverable: "Follow up: Heleo to provide Patterson with Revit model + site photos", requiredBy: "Heleo → Patterson", priority: "HIGH", status: "PENDING", dateDelivered: null, notes: "Revit model with stair location + steel framing photos + storefront shop drawings", firms: ["Heleo"] },
+  { deliverable: "Follow up: Basile to deliver RCP for lighting/fixture coordination", requiredBy: "Basile Studio", priority: "HIGH", status: "PENDING", dateDelivered: null, notes: "Needed for structural coordination of lighting fixtures", firms: ["Basile Studio"] },
+  { deliverable: "Follow up: Basile to develop front entry door design (custom pivot)", requiredBy: "Basile Studio", priority: "HIGH", status: "PENDING", dateDelivered: null, notes: "All storefront systems fabricated — modification is a tricky coordination issue", firms: ["Basile Studio"] },
+  { deliverable: "Follow up: Basile + Heleo to estimate operable bottle display weight/dims", requiredBy: "Basile + Heleo", priority: "HIGH", status: "PENDING", dateDelivered: null, notes: "Needed for structural backing and support planning", firms: ["Basile Studio","Heleo"] },
+  { deliverable: "Review Heleo meeting minutes — respond within 3 business days if errors", requiredBy: "Heleo", priority: "URGENT", status: "COMPLETE", dateDelivered: "3/23/2026", notes: "Email sent to Barbara Leon 3/23/26. No corrections reported.", firms: ["Heleo"] },
+  { deliverable: "Follow up: Heleo to ask structural about columns vs. load bearing walls (kitchen space)", requiredBy: "Heleo", priority: "HIGH", status: "PENDING", dateDelivered: null, notes: "From 3/24 MEP kickoff. Columns instead of full shear walls could save kitchen aisle width.", firms: ["Heleo"] },
+  { deliverable: "Follow up: Heleo to ask structural about recessing kitchen hood into mezzanine structure", requiredBy: "Heleo", priority: "HIGH", status: "PENDING", dateDelivered: null, notes: "From 3/24 MEP kickoff. Would avoid raising mezzanine level to achieve required 9-ft headroom at island hood.", firms: ["Heleo"] },
+  { deliverable: "Follow up: Heleo to coordinate site visit with Suffolk team", requiredBy: "Heleo", priority: "HIGH", status: "PENDING", dateDelivered: null, notes: "From 3/24 MEP kickoff. Group site visit to review existing conditions.", firms: ["Heleo"] },
+  { deliverable: "Follow up: Heleo to finalize backgrounds with structural mezzanine + furring wall updates", requiredBy: "Heleo", priority: "URGENT", status: "PENDING", dateDelivered: null, notes: "From 3/24 MEP kickoff. Was due by Thurs 3/26 — confirm status with Heleo.", firms: ["Heleo"] },
+  { deliverable: "Follow up: REB Design to confirm 9-ft clearance with Acurex for island-style hood", requiredBy: "REB Design", priority: "HIGH", status: "PENDING", dateDelivered: null, notes: "From 3/24 MEP kickoff. Required to coordinate mezzanine headroom constraint.", firms: ["REB Design"] },
+  { deliverable: "Follow up: REB Design (Andrea Hamilton) to send electrostatic PCU drawings to Marino (MEP)", requiredBy: "REB Design → Marino", priority: "HIGH", status: "PENDING", dateDelivered: null, notes: "From 3/24 MEP kickoff. Needed to coordinate duct collar on island hood and PCU duct connection.", firms: ["REB Design"] },
+  { deliverable: "Follow up: Basile to provide update on decorative lighting + BOH lighting division", requiredBy: "Basile Studio", priority: "HIGH", status: "PENDING", dateDelivered: null, notes: "From 3/24 MEP kickoff. To be discussed at Friday check-in.", firms: ["Basile Studio"] },
+  { deliverable: "Review 3/24 MEP Kickoff meeting minutes — respond within 3 business days if errors", requiredBy: "Heleo", priority: "URGENT", status: "PENDING", dateDelivered: null, notes: "Prepared by Barbara Leon. Deadline to respond: 3/27/2026. Heleo proceeds based on minutes unless corrected.", firms: ["Heleo"] },
+];
+
+const PAYMENTS = [
+  { date: "Oct 2025", firm: "Basile Studio", invoice: "RET-001", description: "20% Retainer — contract execution", amount: 24892, method: "Check", status: "PAID", notes: "Non-refundable; credited to final invoice" },
+  { date: "Oct 2025", firm: "Heleo", invoice: "RET-001", description: "Retainer — prior to commencement", amount: 6000, method: "Check", status: "PAID", notes: "Non-refundable" },
+  { date: "Sep 2025", firm: "REB Design", invoice: "1615", description: "Food Service Design Deposit (50% of $17,500)", amount: 8750, method: "Check", status: "PAID", notes: "Balance of $8,750 due upon plan submission" },
+  { date: "Oct 2025", firm: "Basile Studio", invoice: "10263", description: "Payment toward Invoice 10263 (Oct 2025)", amount: 3300, method: "Check/ACH", status: "PARTIAL", notes: "Invoice $3,330 | Paid $3,300 | Balance owed $30" },
+  { date: "Dec 2025", firm: "Basile Studio", invoice: "10315", description: "Payment toward Invoice 10315 (Dec 2025)", amount: 3675, method: "Check/ACH", status: "PARTIAL", notes: "Invoice $8,875 | Paid $3,675 | Balance owed $5,200" },
+  { date: "Feb 2026", firm: "Basile Studio", invoice: "10390", description: "Payment toward Invoice 10390 (Feb 2026)", amount: 5200, method: "Check/ACH", status: "PARTIAL", notes: "Invoice $10,675 | Paid $5,200 | Balance owed $5,475" },
+  { date: "Dec 2025", firm: "Heleo", invoice: "167744", description: "Schematic Design 50% — Kickoff, plans setup, code analysis", amount: 4000, method: "ACH", status: "PAID", notes: "Paid in full | SD phase 50% complete" },
+  { date: "Jan 2026", firm: "Heleo", invoice: "167756", description: "Schematic Design — balance", amount: 4000, method: "ACH", status: "PAID", notes: "Paid in full | SD phase 100% complete" },
+  { date: "Feb 2026", firm: "Heleo", invoice: "167776", description: "Design Development 30%", amount: 4200, method: "ACH", status: "PAID", notes: "Paid in full | DD phase 30% complete" },
+  { date: "Mar 2026", firm: "Heleo", invoice: "167792", description: "Design Development + Patterson Structural Retainer (cost+15%)", amount: 7400, method: "—", status: "UNPAID", notes: "⚠️ UNPAID — Due upon receipt" },
+];
+
+const PHASES = [
+  { phase: "0. Mobilization", consultant: "Basile Studio", duration: "1 week", fee: "$2,667", start: "Oct 2025", target: "Oct 2025", approved: true, notes: "Kickoff complete" },
+  { phase: "1. Preliminary Design (PD)", consultant: "Basile Studio", duration: "3 weeks", fee: "$13,335", start: "Oct 2025", target: "Nov 2025", approved: true, notes: "Complete — space plan approved, Basile advancing to Phase 2" },
+  { phase: "2. Schematic Design (SD)", consultant: "Basile Studio", duration: "5 weeks", fee: "$22,225", start: "Mar 2026", target: "TBD", approved: false, notes: "3D model views; underway following Phase 1 approval" },
+  { phase: "3. Design Development (DD)", consultant: "Basile Studio", duration: "4 weeks", fee: "$22,225", start: "TBD", target: "TBD", approved: false, notes: "Finish selection, custom item DD" },
+  { phase: "4. Construction Documents (CD/CID)", consultant: "Basile Studio", duration: "5 weeks", fee: "$22,225", start: "TBD", target: "TBD", approved: false, notes: "Final ID drawing set" },
+  { phase: "5. Construction Admin (CA)", consultant: "Basile Studio", duration: "Per sched", fee: "$6,223", start: "TBD", target: "TBD", approved: false, notes: "Concurrent with construction" },
+  { phase: "Schematic Design", consultant: "Heleo", duration: "4 weeks", fee: "$8,000", start: "Oct 2025", target: "Nov 2025", approved: false, notes: "Kickoff complete; 2 floor plan presentations" },
+  { phase: "Design Development", consultant: "Heleo", duration: "4 weeks", fee: "$14,000", start: "TBD", target: "TBD", approved: false, notes: "Requires SD approval; includes 3D perspectives" },
+  { phase: "Construction Documents", consultant: "Heleo", duration: "8 weeks", fee: "$28,500", start: "TBD", target: "TBD", approved: false, notes: "Full CD set; 2 team meetings included" },
+  { phase: "Permitting", consultant: "Heleo", duration: "10–12 wks", fee: "$18,500", start: "TBD", target: "TBD", approved: false, notes: "Heleo submits + manages; target mid-summer 2026" },
+  { phase: "Construction Administration", consultant: "Heleo", duration: "Per sched", fee: "Hourly", start: "TBD", target: "TBD", approved: false, notes: "Site visits + RFIs billed hourly" },
+  { phase: "Concept Development", consultant: "REB Design", duration: "2–3 weeks", fee: "Included", start: "Sep 2025", target: "TBD", approved: false, notes: "Equipment list + health code review" },
+  { phase: "Schematic Phase Design", consultant: "REB Design", duration: "2–3 weeks", fee: "Included", start: "TBD", target: "TBD", approved: false, notes: "Needs AutoCAD backgrounds from Heleo" },
+  { phase: "DD & Construction Documents", consultant: "REB Design", duration: "3–4 weeks", fee: "Included", start: "TBD", target: "TBD", approved: false, notes: "Tagged equip plan, rough-ins, hood/walk-in dwgs" },
+  { phase: "Health Dept Submittal", consultant: "REB Design", duration: "Varies", fee: "Included", start: "TBD", target: "TBD", approved: false, notes: "$8,750 balance due upon plan submission" },
+  { phase: "Construction Admin", consultant: "REB Design", duration: "Per sched", fee: "Included", start: "TBD", target: "TBD", approved: false, notes: "RFI response, submittal review" },
+  { phase: "MEP Engineering", consultant: "Marino Design Consultants (via Heleo)", duration: "TBD", fee: "Cost+15%", start: "3/24/2026", target: "TBD", approved: false, notes: "Kickoff complete 3/24/2026. 14-ton VRF condenser for Retail 2. Food service CDs to MEP week of Apr 13." },
+];
+
+const PAYMENT_SCHEDULE = [
+  { vendor: "Basile Studio", trigger: "Retainer — upon execution", amount: "$24,892", due: "PAID", paid: "☑", notes: "Non-refundable per §4.3" },
+  { vendor: "Basile Studio", trigger: "Phase 1 — Preliminary Design", amount: "Hourly", due: "Monthly", paid: "☐", notes: "5%/mo late fee after 15 days" },
+  { vendor: "Basile Studio", trigger: "Phase 2 — Schematic Design", amount: "Hourly", due: "Monthly", paid: "☐", notes: "5%/mo late fee after 15 days" },
+  { vendor: "Basile Studio", trigger: "Phase 3 — Design Development", amount: "Hourly", due: "Monthly", paid: "☐", notes: "5%/mo late fee after 15 days" },
+  { vendor: "Basile Studio", trigger: "Phase 4 — Construction Documents", amount: "Hourly", due: "Monthly", paid: "☐", notes: "5%/mo late fee after 15 days" },
+  { vendor: "Basile Studio", trigger: "Phase 5 — Construction Admin", amount: "Hourly", due: "Monthly", paid: "☐", notes: "Retainer credited to final invoice" },
+  { vendor: "Heleo", trigger: "Retainer — prior to commencement", amount: "$6,000", due: "PAID", paid: "☑", notes: "Non-refundable" },
+  { vendor: "Heleo", trigger: "Schematic Design — phase complete", amount: "$8,000", due: "TBD", paid: "☑", notes: "Fixed fee phase — PAID" },
+  { vendor: "Heleo", trigger: "Design Development — phase complete", amount: "$14,000", due: "TBD", paid: "☐", notes: "Fixed fee phase" },
+  { vendor: "Heleo", trigger: "Construction Documents — phase complete", amount: "$28,500", due: "TBD", paid: "☐", notes: "Fixed fee phase" },
+  { vendor: "Heleo", trigger: "Permitting — phase complete", amount: "$18,500", due: "TBD", paid: "☐", notes: "Fixed fee phase; 10–12 wks" },
+  { vendor: "Heleo", trigger: "Construction Administration", amount: "Hourly", due: "Monthly", paid: "☐", notes: "Site visits + RFI hourly" },
+  { vendor: "Heleo", trigger: "MEP Engineering (pass-through)", amount: "Cost+15%", due: "Monthly", paid: "☐", notes: "Appears on Heleo invoices" },
+  { vendor: "Heleo", trigger: "Structural Eng. (if needed)", amount: "TBD+15%", due: "TBD", paid: "☐", notes: "Appears on Heleo invoices" },
+  { vendor: "REB Design", trigger: "Retainer — upon contract acceptance", amount: "$8,750", due: "PAID", paid: "☑", notes: "Signed Sep 24, 2025" },
+  { vendor: "REB Design", trigger: "Balance — upon plan submission", amount: "$8,750", due: "TBD", paid: "☐", notes: "Due when plans submitted to client" },
+];
+
+const EVENTS = [
+  { date: "Mar 27, 2026", label: "overdue", title: "⚠️ Respond to 3/24 MEP Kickoff Minutes", firm: "Heleo (Barbara Leon) — 3-business-day window closes today", type: "Deadline" },
+  { date: "Mar 26, 2026", label: "overdue", title: "⚠️ Heleo Invoice #167792 — UNPAID", firm: "Heleo | $7,400 — DD + Patterson Structural", type: "Payment Due" },
+  { date: "Mar 26, 2026", label: "overdue", title: "⚠️ Basile Outstanding Balance — $10,705", firm: "Basile Studio | Invoices 10263 ($30) + 10315 ($5,200) + 10390 ($5,475)", type: "Payment Due" },
+  { date: "~Mar 26–28, 2026", label: "imminent", title: "3D Scan of Existing Piping — This Week", firm: "Heleo / all teams — maps existing piping for MEP/duct coordination on mezzanine", type: "Site Activity" },
+  { date: "~Apr 8–14, 2026", label: "upcoming", title: "Target Permit Submittal", firm: "Heleo + Patterson Engineering", type: "Milestone" },
+  { date: "~Apr 13, 2026", label: "upcoming", title: "Drawings + Equipment Schedules to MEP", firm: "REB Design → Marino Design Consultants | Week of April 13", type: "Milestone" },
+  { date: "~Apr 15, 2026", label: "upcoming", title: "Structural DD Target Complete", firm: "Patterson Engineering (4-week timeline from Mar 18 kickoff)", type: "Milestone" },
+  { date: "~Apr 22, 2026", label: "upcoming", title: "Final Food Service Construction Documents", firm: "REB Design — CDs expected ~April 22nd per MEP kickoff", type: "Milestone" },
+  { date: "ASAP", label: "overdue", title: "Provide As-Builts / CAD Backgrounds", firm: "Basile + Heleo + REB — BLOCKING all consultants", type: "Deliverable" },
+  { date: "ASAP", label: "overdue", title: "Obtain Existing Structural Plans", firm: "Patterson Eng. via Heleo — slabs confirmed NOT post-tensioned", type: "Deliverable" },
+  { date: "ASAP", label: "overdue", title: "Provide Equipment List (food service + mechanical)", firm: "Basile + REB Design — Required per Basile §3.2", type: "Deliverable" },
+];
+
+// ─── CONTACTS ────────────────────────────────────────────────────────────────
+const CONTACTS = [
+  { firm: "She Rode West", name: "Jon Weber", role: "Project Coordinator / Owner", email: "jon@sherodewest.com", phone: "—", color: "#c47e3a" },
+  { firm: "Heleo (Architecture / AOR)", name: "Carlos E. Hernandez", role: "Principal / AOR", email: "carlos@heleo.co", phone: "—", color: "#2471a3" },
+  { firm: "Heleo (Architecture / AOR)", name: "Barbara Leon", role: "Project Manager", email: "barbara@heleo.co", phone: "—", color: "#2471a3" },
+  { firm: "Suffolk Construction (Landlord GC)", name: "Brendan Mingle", role: "Project Manager", email: "BMingle@suffolk.com", phone: "+1 (339) 213-1840", color: "#555" },
+  { firm: "Patterson Engineering (Structural)", name: "Lianne Bell", role: "Structural Engineer", email: "lianne@pattersoneng.com", phone: "—", color: "#8e44ad" },
+  { firm: "REB Design (Food Service)", name: "Andrea Hamilton", role: "Food Service Designer", email: "andrea@reb-design.com", phone: "—", color: "#1e8449" },
+  { firm: "Basile Studio (Interior Design)", name: "Ashley", role: "Interior Design", email: "Ashley@basilestudio.com", phone: "—", color: "#c0392b" },
+  { firm: "Basile Studio (Interior Design)", name: "Paul", role: "Interior Design", email: "Paul@basilestudio.com", phone: "—", color: "#c0392b" },
+  { firm: "Marino Design Consultants (MEP)", name: "—", role: "MEP Engineering (via Heleo)", email: "—", phone: "—", color: "#888" },
+];
+
+// ─── OPEN ISSUES ──────────────────────────────────────────────────────────────
+const OPEN_ISSUES = [
+  { id: "OI-01", date: "3/24/2026", source: "MEP Kickoff", title: "Heleo to finalize backgrounds — structural mezzanine + furring wall updates", owner: "Heleo", priority: "URGENT", notes: "Was due Thurs 3/26. Confirm status with Heleo immediately — blocks MEP coordination." },
+  { id: "OI-02", date: "3/24/2026", source: "MEP Kickoff", title: "Obtain existing structural plans (permit set) for the building", owner: "Heleo → Patterson", priority: "URGENT", notes: "CRITICAL — needed to assess loads on ground floor slab. L1 confirmed NOT post-tensioned (3/27/26). Plans still outstanding." },
+  { id: "OI-03", date: "3/24/2026", source: "MEP Kickoff", title: "Columns vs. load-bearing walls in kitchen space", owner: "Heleo → Patterson Engineering", priority: "HIGH", notes: "Columns instead of full shear walls could save kitchen aisle width. Heleo to ask structural." },
+  { id: "OI-04", date: "3/24/2026", source: "MEP Kickoff", title: "Can kitchen hood recess into mezzanine structure?", owner: "Heleo → Patterson Engineering", priority: "HIGH", notes: "Would avoid raising mezzanine level to achieve required 9-ft headroom at island hood." },
+  { id: "OI-05", date: "3/24/2026", source: "MEP Kickoff", title: "Confirm 9-ft clearance with Acurex for island-style hood", owner: "REB Design", priority: "HIGH", notes: "Required to coordinate mezzanine headroom constraint. REB to confirm with Acurex." },
+  { id: "OI-06", date: "3/24/2026", source: "MEP Kickoff", title: "REB to send electrostatic PCU drawings to Marino (MEP)", owner: "REB Design → Marino", priority: "HIGH", notes: "Needed to coordinate duct collar on island hood and PCU duct connection." },
+  { id: "OI-07", date: "3/24/2026", source: "MEP Kickoff", title: "Decorative lighting + BOH lighting division", owner: "Basile Studio", priority: "HIGH", notes: "Basile to provide update — determines MEP circuit planning." },
+  { id: "OI-08", date: "3/24/2026", source: "MEP Kickoff", title: "Group site visit — Heleo + Suffolk team", owner: "Heleo", priority: "HIGH", notes: "Review existing conditions. Heleo to coordinate timing with Brendan Mingle (Suffolk)." },
+];
+
+// ─── KEY DECISIONS ────────────────────────────────────────────────────────────
+const DECISIONS = [
+  { date: "3/27/2026", title: "L1 slab is NOT post-tensioned — L2 and above ARE post-tensioned cable slabs", decidedBy: "Brendan Mingle (Suffolk)", impact: "Low impact — building on L1. Only relevant if ceiling tie-ins required.", source: "Email: Slab Assembly Question" },
+  { date: "3/24/2026", title: "14-ton VRF condenser confirmed for Retail 2 space", decidedBy: "Marino Design Consultants", impact: "MEP/electrical load planning", source: "MEP Kickoff 3/24/26" },
+  { date: "3/23/2026", title: "Stair location finalized", decidedBy: "Heleo", impact: "Unblocks structural backgrounds and Patterson Revit model", source: "Heleo confirmation 3/23/26" },
+  { date: "3/23/2026", title: "Heleo meeting minutes reviewed — no corrections reported", decidedBy: "Jon Weber", impact: "Minutes stand as written; Heleo proceeds per minutes", source: "Email to Barbara Leon 3/23/26" },
+  { date: "Mar 2026", title: "Basile Phase 1 space plan approved — advancing to Phase 2 Schematic Design", decidedBy: "Jon Weber", impact: "Basile now in SD phase; 3D model views underway", source: "Client approval" },
+  { date: "Mar 2026", title: "Project address confirmed as 575 Upas St, SD (not Shelter Island)", decidedBy: "Jon Weber", impact: "Corrected in all consultant records and files", source: "Address correction to Heleo" },
+  { date: "Oct 2025", title: "Heleo confirmed as Architect of Record (AOR)", decidedBy: "Jon Weber", impact: "Heleo leads permitting and all AOR responsibilities", source: "Contract execution" },
+];
+
+// ─── PERMITS ──────────────────────────────────────────────────────────────────
+const PERMITS = [
+  { permit: "Building Permit", authority: "City of San Diego", responsible: "Heleo (submits + manages)", target: "~Apr 8–14, 2026", status: "PENDING", notes: "Tied to CD + structural completion. Heleo leads." },
+  { permit: "Health Department Permit", authority: "SD County Environmental Health", responsible: "REB Design", target: "~Apr 22, 2026", status: "PENDING", notes: "$8,750 balance due to REB upon plan submission." },
+  { permit: "MEP / Mechanical Permit", authority: "City of San Diego", responsible: "Marino Design (via Heleo)", target: "Concurrent with building permit", status: "PENDING", notes: "MEP drawings coordinated with Heleo CD set." },
+  { permit: "Structural Permit", authority: "City of San Diego", responsible: "Patterson Engineering (via Heleo)", target: "~Apr 15, 2026", status: "PENDING", notes: "4-week timeline from Patterson kickoff on Mar 18." },
+  { permit: "Fire / Life Safety Permit", authority: "San Diego Fire-Rescue Dept.", responsible: "Heleo (coordinates with GC)", target: "TBD — concurrent with building permit", status: "PENDING", notes: "Fire suppression, egress, and life safety systems review required." },
+  { permit: "Certificate of Occupancy (C of O)", authority: "City of San Diego", responsible: "Heleo + GC (final inspection)", target: "TBD — prior to opening", status: "PENDING", notes: "Issued after all final inspections pass. Required before She Rode West can open." },
+];
+
+// ─── BUDGET DATA ────────────────────────────────────────────────────────────
+const BUDGET = [
+  { firm: "Basile Studio", contract: 124460, paid: 37067, outstanding: 10705 },
+  { firm: "Heleo",         contract: 69000,  paid: 18200, outstanding: 7400 },
+  { firm: "REB Design",    contract: 17500,  paid: 8750,  outstanding: 0 },
+];
+
+// ─── CHARTS ──────────────────────────────────────────────────────────────────
+const CHART_COLORS = ['#c0392b','#d4860a','#2471a3','#1e8449','#8e44ad','#2ecc71'];
+
+let chartStatus, chartPriority, chartAssignee, chartBudget;
+let filteredTasks = [...TASKS];
+
+function initCharts() {
+  const statusCounts = countBy(TASKS, 'status');
+  chartStatus = new Chart(document.getElementById('chart-status'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(statusCounts),
+      datasets: [{ data: Object.values(statusCounts), backgroundColor: ['#e67e22','#2471a3','#1e8449','#c0392b'], borderColor:'#fff', borderWidth:2 }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, cutout:'60%', plugins:{ legend:{ position:'right', labels:{ usePointStyle:true, padding:12, font:{size:11} } } } }
+  });
+
+  const priCounts = countBy(TASKS, 'priority');
+  const priOrder = ['URGENT','HIGH','ONGOING','DONE'];
+  const priLabels = priOrder.filter(k => priCounts[k]);
+  const priData   = priLabels.map(k => priCounts[k]);
+  const priColors = { URGENT:'#c0392b', HIGH:'#d4860a', ONGOING:'#2471a3', DONE:'#1e8449' };
+  chartPriority = new Chart(document.getElementById('chart-priority'), {
+    type: 'doughnut',
+    data: {
+      labels: priLabels.map(k => ({URGENT:'🔴 Urgent', HIGH:'🟡 High', ONGOING:'🔵 Ongoing', DONE:'✅ Done'}[k])),
+      datasets: [{ data: priData, backgroundColor: priLabels.map(k => priColors[k]), borderColor:'#fff', borderWidth:2 }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, cutout:'60%', plugins:{ legend:{ position:'right', labels:{ usePointStyle:true, padding:12, font:{size:11} } } } }
+  });
+
+  renderAssigneeChart(TASKS);
+  renderBudgetChart();
+}
+
+function renderAssigneeChart(tasks) {
+  const counts = {};
+  tasks.forEach(t => {
+    (t.firms || []).forEach(f => { counts[f] = (counts[f]||0) + 1; });
+  });
+  const labels = Object.keys(counts).sort((a,b) => counts[b]-counts[a]);
+  const data   = labels.map(l => counts[l]);
+  if (chartAssignee) chartAssignee.destroy();
+  chartAssignee = new Chart(document.getElementById('chart-assignee'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{ label:'Tasks', data, backgroundColor: CHART_COLORS.map(c=>c+'CC'), borderColor: CHART_COLORS, borderWidth:1, borderRadius:4 }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false, indexAxis:'y',
+      plugins:{ legend:{display:false} },
+      scales:{ x:{ beginAtZero:true, grid:{display:true}, ticks:{precision:0} }, y:{ grid:{display:false} } }
+    }
+  });
+}
+
+function renderBudgetChart() {
+  const filter = document.getElementById('filter-budget-firm').value;
+  const data = filter === 'all' ? BUDGET : BUDGET.filter(b => b.firm === filter);
+  if (chartBudget) chartBudget.destroy();
+  chartBudget = new Chart(document.getElementById('chart-budget'), {
+    type: 'bar',
+    data: {
+      labels: data.map(b => b.firm),
+      datasets: [
+        { label:'Paid', data: data.map(b=>b.paid), backgroundColor:'#1e8449CC', borderRadius:3 },
+        { label:'Outstanding', data: data.map(b=>b.outstanding), backgroundColor:'#c0392bCC', borderRadius:3 },
+        { label:'Remaining Balance', data: data.map(b=>Math.max(0, b.contract - b.paid - b.outstanding)), backgroundColor:'#dee2e6', borderRadius:3 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'top', labels:{usePointStyle:true,padding:10,font:{size:11}} } },
+      scales:{ x:{ stacked:true, grid:{display:false} }, y:{ stacked:true, beginAtZero:true, ticks:{ callback: v=>'$'+v.toLocaleString() } } }
+    }
+  });
+}
+
+// ─── COUNTDOWN ───────────────────────────────────────────────────────────────
+function daysFrom(dateStr) {
+  const target = new Date(dateStr);
+  const now = new Date(TODAY);
+  now.setHours(0,0,0,0); target.setHours(0,0,0,0);
+  return Math.round((target - now) / 86400000);
+}
+function formatDate(dateStr) {
+  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+function renderCountdown() {
+  const milestones = [
+    { label: 'TARGET OPENING', name: 'She Rode West Opens', date: '2027-02-01', projectStart: '2025-09-01', isPrimary: true },
+    { label: 'FOOD SERVICE CDs', name: 'REB → Marino (MEP)', date: '2026-04-22', projectStart: '2026-03-18' },
+    { label: 'PERMIT SUBMITTAL', name: 'Permit to City', date: (()=>{ const d=new Date('2026-04-22'); d.setDate(d.getDate()+5); return d.toISOString().slice(0,10); })(), projectStart: '2026-03-18' },
+    { label: 'MINUTES RESPONSE', name: 'Reply to Heleo Re: 3/24 Mtg', date: '2026-03-27', projectStart: '2026-03-24' },
+  ];
+  const strip = document.getElementById('countdown-strip');
+  strip.innerHTML = milestones.map(m => {
+    const days = daysFrom(m.date);
+    const totalSpan = daysFrom.call(null, m.date) - daysFrom.call(null, m.projectStart);
+    // progress: how far through the window are we (0–100)
+    const elapsed = -daysFrom(m.projectStart);
+    const total   = Math.max(1, daysFrom(m.date) - daysFrom(m.projectStart) + elapsed);
+    const pct     = Math.min(100, Math.max(0, Math.round((elapsed / (elapsed + Math.max(1,days))) * 100)));
+    const overdue = days < 0;
+    const urgent  = days >= 0 && days <= 3;
+    const daysDisplay = overdue ? Math.abs(days) : days;
+    const daysLabel   = overdue ? 'days overdue' : days === 0 ? 'TODAY' : days === 1 ? 'day' : 'days';
+    const barColor    = overdue ? '#c0392b' : urgent ? '#d4860a' : '#c47e3a';
+    return `
+      <div class="countdown-cell${m.isPrimary ? ' primary' : ''}">
+        <div class="countdown-label">${m.label}</div>
+        <div class="countdown-days">
+          ${days === 0 ? '<span style="font-size:24px;color:#f5c842;">TODAY</span>' : `${daysDisplay}<span class="days-unit">${daysLabel === 'TODAY' ? '' : ' ' + daysLabel}</span>`}
+        </div>
+        <div class="countdown-name">${m.name}</div>
+        <div class="countdown-date">${formatDate(m.date)}</div>
+        <div class="countdown-bar-track">
+          <div class="countdown-bar-fill" style="width:${pct}%;background:${barColor};"></div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ─── KPIs ────────────────────────────────────────────────────────────────────
+function renderKPIs(tasks) {
+  const urgent   = tasks.filter(t=>t.priority==='URGENT'&&t.status!=='COMPLETE').length;
+  const high     = tasks.filter(t=>t.priority==='HIGH'&&t.status!=='COMPLETE').length;
+  const done     = tasks.filter(t=>t.status==='COMPLETE').length;
+  const open     = tasks.filter(t=>t.status!=='COMPLETE').length;
+  const total    = tasks.length;
+  const paid     = PAYMENTS.filter(p=>p.status!=='UNPAID').reduce((s,p)=>s+p.amount,0);
+  const outstanding = PAYMENTS.filter(p=>p.status==='UNPAID').reduce((s,p)=>s+p.amount,0)
+                    + 10705; // Basile outstanding balance
+  document.getElementById('kpi-urgent').textContent = urgent;
+  document.getElementById('kpi-high').textContent   = high;
+  document.getElementById('kpi-done').textContent   = done;
+  document.getElementById('kpi-open').textContent   = open;
+  document.getElementById('kpi-total').textContent  = total;
+  document.getElementById('kpi-paid').textContent   = '$'+paid.toLocaleString();
+  document.getElementById('kpi-outstanding').textContent = '$'+outstanding.toLocaleString();
+}
+
+// ─── EVENTS ─────────────────────────────────────────────────────────────────
+function renderEvents() {
+  const grid = document.getElementById('events-grid');
+  grid.innerHTML = EVENTS.map(e => `
+    <div class="event-card ${e.label}">
+      <div class="event-date ${e.label}">${e.date}</div>
+      <div class="event-title">${e.title}</div>
+      <div class="event-firm">${e.firm}</div>
+      <div style="margin-top:4px;"><span class="badge badge-${e.label==='overdue'?'unpaid':'pending'}" style="font-size:10px;">${e.type}</span></div>
+    </div>
+  `).join('');
+}
+
+// ─── BUDGET SUMMARY ──────────────────────────────────────────────────────────
+function renderBudget() {
+  const filter = document.getElementById('filter-budget-firm').value;
+  const data = filter === 'all' ? BUDGET : BUDGET.filter(b => b.firm === filter);
+  let html = '';
+  data.forEach(b => {
+    const pct = Math.round((b.paid / b.contract) * 100);
+    html += `
+      <div class="budget-bar-wrap">
+        <div class="budget-bar-label">
+          <strong>${b.firm}</strong>
+          <span style="color:var(--text-secondary)">$${b.paid.toLocaleString()} paid / $${b.contract.toLocaleString()} contract</span>
+        </div>
+        <div class="budget-bar-track">
+          <div class="budget-bar-fill" style="width:${pct}%;background:#1e8449;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);margin-top:2px;">
+          <span>${pct}% paid</span>
+          ${b.outstanding > 0 ? `<span style="color:var(--urgent);font-weight:600;">⚠️ $${b.outstanding.toLocaleString()} outstanding</span>` : '<span style="color:var(--done)">✅ No outstanding</span>'}
+        </div>
+      </div>
+    `;
+  });
+  const totalPaid = data.reduce((s,b)=>s+b.paid,0);
+  const totalContr = data.filter(b=>b.contract).reduce((s,b)=>s+b.contract,0);
+  const totalOut   = data.reduce((s,b)=>s+b.outstanding,0);
+  html += `<div style="margin-top:12px;padding-top:10px;border-top:1px solid #e8ddd0;display:flex;gap:16px;font-size:12px;">
+    <div><span style="color:var(--text-secondary)">Total Paid: </span><strong>$${totalPaid.toLocaleString()}</strong></div>
+    <div><span style="color:var(--text-secondary)">Committed: </span><strong>$${totalContr.toLocaleString()}+</strong></div>
+    ${totalOut>0?`<div><span style="color:var(--urgent)">Outstanding: </span><strong style="color:var(--urgent)">$${totalOut.toLocaleString()}</strong></div>`:''}
+  </div>`;
+  document.getElementById('budget-summary').innerHTML = html;
+  renderBudgetChart();
+}
+
+// ─── PAYMENT LOG ─────────────────────────────────────────────────────────────
+function renderPaymentLog() {
+  const rows = PAYMENTS.map(p => {
+    const isUnpaid = p.status === 'UNPAID';
+    return `<tr class="${isUnpaid?'unpaid-row':''}">
+      <td>${p.date}</td>
+      <td style="font-weight:600;">${p.firm}</td>
+      <td>#${p.invoice}</td>
+      <td style="text-align:right;font-weight:600;">$${p.amount.toLocaleString()}</td>
+      <td>${isUnpaid ? '<span class="badge badge-unpaid">UNPAID</span>' : p.status === 'PARTIAL' ? '<span class="badge badge-high">PARTIAL</span>' : '<span class="badge badge-paid">PAID</span>'}</td>
+    </tr>`;
+  }).join('');
+  const totalPaid = PAYMENTS.filter(p=>p.status!=='UNPAID').reduce((s,p)=>s+p.amount,0);
+  document.getElementById('payment-log').innerHTML = `
+    <table class="data-table">
+      <thead><tr><th>Date</th><th>Firm</th><th>Invoice</th><th style="text-align:right">Amount</th><th>Status</th></tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot>
+        <tr style="font-weight:700;border-top:2px solid #e8ddd0;">
+          <td colspan="3" style="padding:8px 12px;font-size:12px;color:var(--text-secondary);">Total Paid</td>
+          <td style="text-align:right;padding:8px 12px;">$${totalPaid.toLocaleString()}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+    <div style="margin-top:10px;padding:8px 10px;background:#fdf6e3;border-radius:6px;font-size:11px;color:#7a6000;">
+      ⚠️ Basile outstanding across 3 invoices: $10,705 unpaid (Invoice 10263 $30 + 10315 $5,200 + 10390 $5,475)
+    </div>
+  `;
+}
+
+// ─── PHASE TABLE ─────────────────────────────────────────────────────────────
+function renderPhaseTable() {
+  const firmColors = { 'Basile Studio':'#c47e3a', 'Heleo':'#2471a3', 'REB Design':'#1e8449', 'TBD (via Heleo)':'#888' };
+  const tbody = PHASES.map(p => `
+    <tr>
+      <td style="font-weight:600;">${p.phase}</td>
+      <td><span style="color:${firmColors[p.consultant]||'#555'};font-weight:600;">${p.consultant}</span></td>
+      <td>${p.duration}</td>
+      <td style="font-weight:600;">${p.fee}</td>
+      <td style="color:var(--text-secondary);">${p.start}</td>
+      <td style="color:var(--text-secondary);">${p.target}</td>
+      <td>${p.approved ? '<span class="badge badge-approved">✅ Approved</span>' : '<span class="badge badge-pending-approval">☐ Pending</span>'}</td>
+      <td style="font-size:11px;color:var(--text-secondary);max-width:220px;">${p.notes}</td>
+    </tr>
+  `).join('');
+  document.getElementById('phase-tbody').innerHTML = tbody;
+}
+
+// ─── PAYMENT SCHEDULE TABLE ───────────────────────────────────────────────────
+function renderPaymentSchedule() {
+  const vendorColors = { 'Basile Studio':'#c47e3a', 'Heleo':'#2471a3', 'REB Design':'#1e8449' };
+  const tbody = PAYMENT_SCHEDULE.map(p => `
+    <tr>
+      <td style="font-weight:600;color:${vendorColors[p.vendor]||'#555'};">${p.vendor}</td>
+      <td>${p.trigger}</td>
+      <td style="font-weight:600;">${p.amount}</td>
+      <td>${p.due}</td>
+      <td style="font-size:16px;">${p.paid}</td>
+      <td style="font-size:11px;color:var(--text-secondary);">${p.notes}</td>
+    </tr>
+  `).join('');
+  document.getElementById('payment-schedule-tbody').innerHTML = tbody;
+}
+
+// ─── TASKS TABLE ─────────────────────────────────────────────────────────────
+function renderTasksTable(tasks) {
+  document.getElementById('task-count').textContent = `Showing ${tasks.length} of ${TASKS.length} tasks`;
+  const priorityBadge = { URGENT:'badge-urgent 🔴 Urgent', HIGH:'badge-high 🟡 High', ONGOING:'badge-ongoing 🔵 Ongoing', DONE:'badge-done ✅ Done' };
+  const statusBadge   = { PENDING:'badge-pending Pending', ONGOING:'badge-ongoing Ongoing', COMPLETE:'badge-complete Complete', TOMORROW:'badge-tomorrow Tomorrow' };
+  const rows = tasks.map(t => {
+    const [pClass, pLabel] = (priorityBadge[t.priority]||'badge-tbd Unknown').split(' ').reduce((a,v,i)=>i===0?[v,a[1]]:[a[0],a[1]+' '+v],['',' ']);
+    const [sClass, sLabel] = (statusBadge[t.status]||'badge-tbd Unknown').split(' ').reduce((a,v,i)=>i===0?[v,a[1]]:[a[0],a[1]+' '+v],['',' ']);
+    return `<tr>
+      <td style="max-width:280px;font-size:12.5px;">${t.deliverable}</td>
+      <td style="font-size:11px;color:var(--text-secondary);">${t.requiredBy}</td>
+      <td><span class="badge ${pClass.trim()}">${pLabel.trim()}</span></td>
+      <td><span class="badge ${sClass.trim()}">${sLabel.trim()}</span></td>
+      <td style="font-size:11px;color:var(--text-secondary);">${t.dateDelivered||'—'}</td>
+      <td style="font-size:11px;color:var(--text-secondary);max-width:240px;">${t.notes}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('tasks-table-wrap').innerHTML = `
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Deliverable</th>
+          <th>Required By</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Delivered</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>${rows||'<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-secondary);">No tasks match current filters.</td></tr>'}</tbody>
+    </table>
+  `;
+}
+
+// ─── FILTERS ─────────────────────────────────────────────────────────────────
+function applyFilters() {
+  const firm     = document.getElementById('filter-firm').value;
+  const status   = document.getElementById('filter-status').value;
+  const priority = document.getElementById('filter-priority').value;
+
+  filteredTasks = TASKS.filter(t => {
+    if (firm !== 'all') {
+      // match if any of the task's firms includes the filter, or requiredBy includes, or firm is 'Jon Weber' for all tasks
+      const matchFirm = (t.firms||[]).includes(firm) || t.requiredBy.includes(firm);
+      const matchJon  = firm === 'Jon Weber'; // Jon owns all tasks
+      if (!matchFirm && !matchJon) return false;
+    }
+    if (status !== 'all' && t.status !== status) return false;
+    if (priority !== 'all' && t.priority !== priority) return false;
+    return true;
+  });
+
+  renderKPIs(filteredTasks);
+  renderAssigneeChart(filteredTasks);
+  renderTasksTable(filteredTasks);
+  updateStatusChart(filteredTasks);
+  updatePriorityChart(filteredTasks);
+}
+
+function resetFilters() {
+  document.getElementById('filter-firm').value     = 'all';
+  document.getElementById('filter-status').value   = 'all';
+  document.getElementById('filter-priority').value = 'all';
+  filteredTasks = [...TASKS];
+  renderKPIs(TASKS);
+  renderAssigneeChart(TASKS);
+  renderTasksTable(TASKS);
+  updateStatusChart(TASKS);
+  updatePriorityChart(TASKS);
+}
+
+function updateStatusChart(tasks) {
+  const counts = countBy(tasks, 'status');
+  chartStatus.data.labels = Object.keys(counts);
+  chartStatus.data.datasets[0].data = Object.values(counts);
+  chartStatus.update('none');
+}
+
+function updatePriorityChart(tasks) {
+  const counts = countBy(tasks, 'priority');
+  const priOrder = ['URGENT','HIGH','ONGOING','DONE'];
+  const labels = priOrder.filter(k=>counts[k]);
+  const priColors = { URGENT:'#c0392b', HIGH:'#d4860a', ONGOING:'#2471a3', DONE:'#1e8449' };
+  chartPriority.data.labels = labels.map(k=>({URGENT:'🔴 Urgent',HIGH:'🟡 High',ONGOING:'🔵 Ongoing',DONE:'✅ Done'}[k]));
+  chartPriority.data.datasets[0].data = labels.map(k=>counts[k]);
+  chartPriority.data.datasets[0].backgroundColor = labels.map(k=>priColors[k]);
+  chartPriority.update('none');
+}
+
+// ─── OPEN ISSUES ─────────────────────────────────────────────────────────────
+function renderOpenIssues() {
+  const html = OPEN_ISSUES.map(i => {
+    const isUrgent = i.priority === 'URGENT';
+    return `
+      <div class="event-card ${isUrgent ? 'overdue' : 'imminent'}" style="padding:12px 14px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px;">
+          <div style="font-weight:600;font-size:13px;">${i.title}</div>
+          <span class="badge ${isUrgent ? 'badge-urgent' : 'badge-high'}" style="white-space:nowrap;flex-shrink:0;">${i.priority}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-bottom:3px;">👤 ${i.owner} &nbsp;·&nbsp; 📅 ${i.date} &nbsp;·&nbsp; 📋 ${i.source}</div>
+        <div style="font-size:11px;color:var(--text-primary);">${i.notes}</div>
+      </div>`;
+  }).join('');
+  document.getElementById('open-issues-grid').innerHTML =
+    `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px;">${html}</div>`;
+}
+
+// ─── DECISIONS LOG ────────────────────────────────────────────────────────────
+function renderDecisions() {
+  const tbody = DECISIONS.map(d => `
+    <tr>
+      <td style="white-space:nowrap;font-size:11px;color:var(--text-secondary);">${d.date}</td>
+      <td style="font-weight:600;font-size:12.5px;">${d.title}</td>
+      <td style="font-size:11px;color:var(--text-secondary);">${d.decidedBy}</td>
+      <td style="font-size:11px;color:var(--text-secondary);">${d.impact}</td>
+      <td style="font-size:11px;color:var(--text-secondary);">${d.source}</td>
+    </tr>`).join('');
+  document.getElementById('decisions-tbody').innerHTML = tbody;
+}
+
+// ─── PERMIT TRACKER ───────────────────────────────────────────────────────────
+function renderPermits() {
+  const tbody = PERMITS.map(p => `
+    <tr>
+      <td style="font-weight:600;">${p.permit}</td>
+      <td style="font-size:11px;color:var(--text-secondary);">${p.authority}</td>
+      <td style="font-size:11px;color:var(--text-secondary);">${p.responsible}</td>
+      <td style="font-size:11px;color:var(--text-secondary);">${p.target}</td>
+      <td><span class="badge badge-pending">PENDING</span></td>
+      <td style="font-size:11px;color:var(--text-secondary);">${p.notes}</td>
+    </tr>`).join('');
+  document.getElementById('permits-tbody').innerHTML = tbody;
+}
+
+// ─── CONTACT DIRECTORY ────────────────────────────────────────────────────────
+function renderContacts() {
+  const byFirm = {};
+  CONTACTS.forEach(c => {
+    if (!byFirm[c.firm]) byFirm[c.firm] = { color: c.color, contacts: [] };
+    byFirm[c.firm].contacts.push(c);
+  });
+  const cards = Object.entries(byFirm).map(([firm, data]) => `
+    <div style="background:var(--bg-card);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);border-left:3px solid ${data.color};">
+      <div style="font-weight:700;font-size:11px;color:${data.color};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">${firm}</div>
+      ${data.contacts.map((c,i,arr) => `
+        <div style="margin-bottom:${i<arr.length-1?'8px':'0'};padding-bottom:${i<arr.length-1?'8px':'0'};${i<arr.length-1?'border-bottom:1px solid rgba(0,0,0,0.05);':''}">
+          <div style="font-weight:600;font-size:13px;">${c.name}</div>
+          <div style="font-size:11px;color:var(--text-secondary);">${c.role}</div>
+          ${c.email !== '—' ? `<div style="font-size:11px;margin-top:2px;">📧 <a href="mailto:${c.email}" style="color:var(--ongoing);text-decoration:none;">${c.email}</a></div>` : ''}
+          ${c.phone !== '—' ? `<div style="font-size:11px;">📞 ${c.phone}</div>` : ''}
+        </div>`).join('')}
+    </div>`).join('');
+  document.getElementById('contacts-grid').innerHTML =
+    `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;">${cards}</div>`;
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function countBy(arr, field) {
+  return arr.reduce((acc,item) => {
+    const k = item[field]; acc[k]=(acc[k]||0)+1; return acc;
+  }, {});
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const todayStr = TODAY.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  document.getElementById('today-date').textContent = todayStr;
+  document.getElementById('footer-date').textContent = todayStr;
+  renderCountdown();
+  initCharts();
+  renderKPIs(TASKS);
+  renderOpenIssues();
+  renderEvents();
+  renderTasksTable(TASKS);
+  renderDecisions();
+  renderPermits();
+  renderBudget();
+  renderPaymentLog();
+  renderPhaseTable();
+  renderPaymentSchedule();
+  renderContacts();
+});
+</script>
+</body>
+</html>
