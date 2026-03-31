@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>She Rode West — Project Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
   <style>
     :root {
       --bg: #f5f0ea;
@@ -216,6 +216,25 @@
     .badge-tbd      { background: #f0f0f0; color: #555; }
     .badge-approved { background: #eafaf1; color: var(--done); }
     .badge-pending-approval { background: #fdf6e3; color: #7a6000; }
+    .badge-in-progress { background: #e8f4fb; color: var(--ongoing); }
+
+    /* Clickable / toggleable badges */
+    .badge.clickable { cursor: pointer; transition: filter 0.12s, transform 0.1s; user-select: none; }
+    .badge.clickable:hover { filter: brightness(0.88); transform: scale(1.07); }
+    .badge.clickable:hover::after { content: ' ↻'; font-size: 10px; opacity: 0.7; }
+    .badge.clickable:active { transform: scale(0.96); }
+
+    /* Save flash notification */
+    .save-flash {
+      position: fixed; bottom: 20px; right: 20px;
+      background: #1e8449; color: #fff;
+      padding: 8px 18px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+      opacity: 0; transition: opacity 0.3s;
+      pointer-events: none; z-index: 9999;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    }
+    .save-flash.show { opacity: 1; }
 
     /* PAYMENT ROW HIGHLIGHT */
     tr.unpaid-row td { background: #fff8f6; }
@@ -563,8 +582,10 @@
 
   <footer class="dashboard-footer">
     She Rode West Project Dashboard &nbsp;·&nbsp; Data as of <span id="footer-date"></span>
+    &nbsp;·&nbsp; <span style="color:var(--ongoing);cursor:pointer;font-weight:600;" onclick="resetAllState()">↺ Reset all statuses</span>
   </footer>
 </div>
+<div class="save-flash" id="save-flash">💾 Saved</div>
 
 <script>
 // ─── DATA ─────────────────────────────────────────────────────────────────────
@@ -586,7 +607,7 @@ const TASKS = [
   { deliverable: "Provide timely responses to ALL consultant requests", requiredBy: "All consultants", priority: "ONGOING", status: "ONGOING", dateDelivered: null, notes: "Basile: 14-day max. REB: cooperate timely", firms: ["Basile Studio","Heleo","REB Design"] },
   { deliverable: "Pay all invoices on time", requiredBy: "All consultants", priority: "ONGOING", status: "ONGOING", dateDelivered: null, notes: "Basile 15 days; Heleo 60 days; REB per terms", firms: ["Basile Studio","Heleo","REB Design"] },
   { deliverable: "Attend MEP kickoff meeting", requiredBy: "Marino Design Consultants (MEP)", priority: "DONE", status: "COMPLETE", dateDelivered: "3/24/2026", notes: "MEP kickoff held 3/24/26 with Marino Design Consultants. Minutes by Barbara Leon.", firms: ["Heleo"] },
-  { deliverable: "Obtain existing structural plans (permit set) for the building", requiredBy: "Patterson Eng. via Heleo", priority: "DONE", status: "COMPLETE", dateDelivered: "Mar 2026", notes: "Delivered to Patterson via Heleo. UPDATE 3/27/26: Confirmed by Brendan Mingle (Suffolk) — L1 is NOT post-tensioned. L2 and above ARE post-tensioned cable slabs. Low impact since building on L1; only relevant if ceiling tie-ins required.", firms: ["Heleo"] },
+  { deliverable: "Obtain existing structural plans (permit set) for the building", requiredBy: "Patterson Eng. via Heleo", priority: "URGENT", status: "PENDING", dateDelivered: null, notes: "CRITICAL — needed to assess loads on ground floor slab above parking garage. UPDATE 3/27/26: Confirmed by Brendan Mingle (Suffolk) — L1 is NOT post-tensioned. L2 and above ARE post-tensioned cable slabs. Low impact since building on L1; only relevant if ceiling tie-ins required.", firms: ["Heleo"] },
   { deliverable: "Confirm stair location finalized (Heleo action — follow up)", requiredBy: "Heleo", priority: "URGENT", status: "COMPLETE", dateDelivered: "3/23/2026", notes: "Heleo to finalize by 3/20/26 — follow up if not received", firms: ["Heleo"] },
   { deliverable: "Follow up: Heleo to provide Patterson with Revit model + site photos", requiredBy: "Heleo → Patterson", priority: "HIGH", status: "PENDING", dateDelivered: null, notes: "Revit model with stair location + steel framing photos + storefront shop drawings", firms: ["Heleo"] },
   { deliverable: "Follow up: Basile to deliver RCP for lighting/fixture coordination", requiredBy: "Basile Studio", priority: "HIGH", status: "PENDING", dateDelivered: null, notes: "Needed for structural coordination of lighting fixtures", firms: ["Basile Studio"] },
@@ -594,13 +615,19 @@ const TASKS = [
   { deliverable: "Follow up: Basile + Heleo to estimate operable bottle display weight/dims", requiredBy: "Basile + Heleo", priority: "HIGH", status: "PENDING", dateDelivered: null, notes: "Needed for structural backing and support planning", firms: ["Basile Studio","Heleo"] },
   { deliverable: "Review Heleo meeting minutes — respond within 3 business days if errors", requiredBy: "Heleo", priority: "URGENT", status: "COMPLETE", dateDelivered: "3/23/2026", notes: "Email sent to Barbara Leon 3/23/26. No corrections reported.", firms: ["Heleo"] },
   { deliverable: "Follow up: Heleo to ask structural about columns vs. load bearing walls (kitchen space)", requiredBy: "Heleo", priority: "HIGH", status: "PENDING", dateDelivered: null, notes: "From 3/24 MEP kickoff. Columns instead of full shear walls could save kitchen aisle width.", firms: ["Heleo"] },
-  { deliverable: "Follow up: Heleo to ask structural about recessing kitchen hood into mezzanine structure", requiredBy: "Heleo", priority: "HIGH", status: "PENDING", dateDelivered: null, notes: "From 3/24 MEP kickoff. Would avoid raising mezzanine level to achieve required 9-ft headroom at island hood.", firms: ["Heleo"] },
+  { deliverable: "Follow up: Heleo to ask structural about recessing kitchen hood into mezzanine structure", requiredBy: "Heleo", priority: "HIGH", status: "PENDING", dateDelivered: null, notes: "UPDATE 3/27/26: Addressed at PCU meeting. Patterson confirmed no structural issues with hood opening penetrating mezzanine floor. Mezzanine reclassified as unoccupied equipment platform (not habitable). Exact location + dimensions still needed from REB before Patterson can frame opening.", firms: ["Heleo"] },
   { deliverable: "Follow up: Heleo to coordinate site visit with Suffolk team", requiredBy: "Heleo", priority: "HIGH", status: "PENDING", dateDelivered: null, notes: "From 3/24 MEP kickoff. Group site visit to review existing conditions.", firms: ["Heleo"] },
   { deliverable: "Follow up: Heleo to finalize backgrounds with structural mezzanine + furring wall updates", requiredBy: "Heleo", priority: "URGENT", status: "PENDING", dateDelivered: null, notes: "From 3/24 MEP kickoff. Was due by Thurs 3/26 — confirm status with Heleo.", firms: ["Heleo"] },
-  { deliverable: "Follow up: REB Design to confirm 9-ft clearance with Acurex for island-style hood", requiredBy: "REB Design", priority: "HIGH", status: "PENDING", dateDelivered: null, notes: "From 3/24 MEP kickoff. Required to coordinate mezzanine headroom constraint.", firms: ["REB Design"] },
+  { deliverable: "Follow up: REB Design to confirm hood clearance with Accurex for island-style hood", requiredBy: "REB Design", priority: "HIGH", status: "PENDING", dateDelivered: null, notes: "UPDATE 3/27/26: Clearance requirement revised to 80 inches (down from 9 ft/108\") per PCU meeting. Accurex (Ameer Tillman) also investigating low-profile hood option that could gain ~6 more inches. REB still needs to establish exact hood location and send dashed-line plan to Heleo.", firms: ["REB Design"] },
   { deliverable: "Follow up: REB Design (Andrea Hamilton) to send electrostatic PCU drawings to Marino (MEP)", requiredBy: "REB Design → Marino", priority: "HIGH", status: "PENDING", dateDelivered: null, notes: "From 3/24 MEP kickoff. Needed to coordinate duct collar on island hood and PCU duct connection.", firms: ["REB Design"] },
   { deliverable: "Follow up: Basile to provide update on decorative lighting + BOH lighting division", requiredBy: "Basile Studio", priority: "HIGH", status: "PENDING", dateDelivered: null, notes: "From 3/24 MEP kickoff. To be discussed at Friday check-in.", firms: ["Basile Studio"] },
   { deliverable: "Review 3/24 MEP Kickoff meeting minutes — respond within 3 business days if errors", requiredBy: "Heleo", priority: "URGENT", status: "PENDING", dateDelivered: null, notes: "Prepared by Barbara Leon. Deadline to respond: 3/27/2026. Heleo proceeds based on minutes unless corrected.", firms: ["Heleo"] },
+  // ── FROM 3/27 PCU / MEZZANINE MEETING ──────────────────────────────────────
+  { deliverable: "Review 3/27 PCU/Mezzanine meeting minutes — respond within 3 business days if errors", requiredBy: "Heleo (Barbara Leon)", priority: "URGENT", status: "PENDING", dateDelivered: null, notes: "Deadline: 4/1/2026. Prepared by Barbara Leon. Heleo proceeds unless corrections received. Meeting addressed PCU headroom, suspension, hood clearance, and mezzanine classification.", firms: ["Heleo"] },
+  { deliverable: "Accurex: Modify fan rotation per PCU coordination meeting", requiredBy: "Accurex (Ameer Tillman)", priority: "URGENT", status: "PENDING", dateDelivered: null, notes: "Action item from 3/27 PCU/Mezzanine meeting. Required for PCU placement and coordination.", firms: ["Heleo"] },
+  { deliverable: "Accurex: Send Revit families — normal canopy hood + 6-inch tapered hood", requiredBy: "Accurex (Ameer Tillman)", priority: "URGENT", status: "PENDING", dateDelivered: null, notes: "Action item from 3/27 PCU meeting. Was to be sent immediately after meeting (3/27). Needed for Revit model coordination.", firms: ["Heleo"] },
+  { deliverable: "REB Design: Establish exact hood location + send plan with dashed-line guidelines for Revit model", requiredBy: "REB Design (Caroline / Andrea)", priority: "URGENT", status: "PENDING", dateDelivered: null, notes: "Action item from 3/27 PCU meeting. Dashed-line plan needed so Heleo can input final hood location into Revit. Patterson needs exact location + dims for mezzanine framing.", firms: ["REB Design"] },
+  { deliverable: "Heleo: Input final hood location into Revit model + distribute to Patterson + MDC team", requiredBy: "Heleo (Barbara Leon)", priority: "URGENT", status: "PENDING", dateDelivered: null, notes: "Action item from 3/27 PCU meeting. Distribute updated model to Hunter Britt (Patterson Engineering) and MDC Mechanical. Depends on REB Design providing hood location first.", firms: ["Heleo"] },
 ];
 
 const PAYMENTS = [
@@ -656,7 +683,8 @@ const PAYMENT_SCHEDULE = [
 ];
 
 const EVENTS = [
-  { date: "Mar 27, 2026", label: "overdue", title: "⚠️ Respond to 3/24 MEP Kickoff Minutes", firm: "Heleo (Barbara Leon) — 3-business-day window closes today", type: "Deadline" },
+  { date: "Apr 1, 2026", label: "imminent", title: "⚠️ Respond to 3/27 PCU/Mezzanine Meeting Minutes", firm: "Heleo (Barbara Leon) — 3-business-day window closes 4/1/2026", type: "Deadline" },
+  { date: "Mar 27, 2026", label: "overdue", title: "⚠️ Respond to 3/24 MEP Kickoff Minutes — Past Due", firm: "Heleo (Barbara Leon) — deadline was 3/27. Confirm if response was sent.", type: "Deadline" },
   { date: "Mar 28, 2026", label: "upcoming", title: "✅ Heleo Invoice #167792 — PAID", firm: "Heleo | $7,400 — Check #1012", type: "Payment" },
   { date: "Mar 26, 2026", label: "overdue", title: "⚠️ Basile Outstanding Balance — $10,705", firm: "Basile Studio | Invoices 10263 ($30) + 10315 ($5,200) + 10390 ($5,475)", type: "Payment Due" },
   { date: "~Mar 26–28, 2026", label: "imminent", title: "3D Scan of Existing Piping — This Week", firm: "Heleo / all teams — maps existing piping for MEP/duct coordination on mezzanine", type: "Site Activity" },
@@ -676,6 +704,8 @@ const CONTACTS = [
   { firm: "Heleo (Architecture / AOR)", name: "Barbara Leon", role: "Project Manager", email: "barbara@heleo.co", phone: "—", color: "#2471a3" },
   { firm: "Suffolk Construction (Landlord GC)", name: "Brendan Mingle", role: "Project Manager", email: "BMingle@suffolk.com", phone: "+1 (339) 213-1840", color: "#555" },
   { firm: "Patterson Engineering (Structural)", name: "Lianne Bell", role: "Structural Engineer", email: "lianne@pattersoneng.com", phone: "—", color: "#8e44ad" },
+  { firm: "Patterson Engineering (Structural)", name: "Hunter Britt", role: "Structural Engineer — PCU/Mezzanine Lead", email: "—", phone: "—", color: "#8e44ad" },
+  { firm: "Accurex (Kitchen Ventilation)", name: "Ameer Tillman", role: "Equipment Representative — PCU + Hood", email: "—", phone: "—", color: "#7d6608" },
   { firm: "REB Design (Food Service)", name: "Andrea Hamilton", role: "Food Service Designer", email: "andrea@reb-design.com", phone: "—", color: "#1e8449" },
   { firm: "Basile Studio (Interior Design)", name: "Ashley", role: "Interior Design", email: "Ashley@basilestudio.com", phone: "—", color: "#c0392b" },
   { firm: "Basile Studio (Interior Design)", name: "Paul", role: "Interior Design", email: "Paul@basilestudio.com", phone: "—", color: "#c0392b" },
@@ -685,9 +715,10 @@ const CONTACTS = [
 // ─── OPEN ISSUES ──────────────────────────────────────────────────────────────
 const OPEN_ISSUES = [
   { id: "OI-01", date: "3/24/2026", source: "MEP Kickoff", title: "Heleo to finalize backgrounds — structural mezzanine + furring wall updates", owner: "Heleo", priority: "URGENT", notes: "Was due Thurs 3/26. Confirm status with Heleo immediately — blocks MEP coordination." },
+  { id: "OI-02", date: "3/24/2026", source: "MEP Kickoff", title: "Obtain existing structural plans (permit set) for the building", owner: "Heleo → Patterson", priority: "URGENT", notes: "CRITICAL — needed to assess loads on ground floor slab. L1 confirmed NOT post-tensioned (3/27/26). Plans still outstanding." },
   { id: "OI-03", date: "3/24/2026", source: "MEP Kickoff", title: "Columns vs. load-bearing walls in kitchen space", owner: "Heleo → Patterson Engineering", priority: "HIGH", notes: "Columns instead of full shear walls could save kitchen aisle width. Heleo to ask structural." },
-  { id: "OI-04", date: "3/24/2026", source: "MEP Kickoff", title: "Can kitchen hood recess into mezzanine structure?", owner: "Heleo → Patterson Engineering", priority: "HIGH", notes: "Would avoid raising mezzanine level to achieve required 9-ft headroom at island hood." },
-  { id: "OI-05", date: "3/24/2026", source: "MEP Kickoff", title: "Confirm 9-ft clearance with Acurex for island-style hood", owner: "REB Design", priority: "HIGH", notes: "Required to coordinate mezzanine headroom constraint. REB to confirm with Acurex." },
+  { id: "OI-04", date: "3/27/2026", source: "PCU/Mezzanine Meeting", title: "Exact PCU + hood location and dimensions needed for Patterson mezzanine framing", owner: "REB Design → Heleo → Patterson", priority: "URGENT", notes: "UPDATE 3/27/26: Patterson (Hunter Britt) confirmed no structural issues with hood penetrating mezzanine. REB must send dashed-line plan with hood location. Heleo inputs into Revit and distributes to Patterson + MDC. Blocks all structural framing." },
+  { id: "OI-05", date: "3/27/2026", source: "PCU/Mezzanine Meeting", title: "Accurex Revit families + fan rotation — outstanding from 3/27 meeting", owner: "Accurex (Ameer Tillman)", priority: "URGENT", notes: "UPDATE 3/27/26: Clearance revised to 80\" (from 9 ft). Accurex committed to sending Revit families immediately after 3/27 meeting and investigating low-profile hood (+6 inches). Fan rotation to be modified. Confirm receipt with Heleo." },
   { id: "OI-06", date: "3/24/2026", source: "MEP Kickoff", title: "REB to send electrostatic PCU drawings to Marino (MEP)", owner: "REB Design → Marino", priority: "HIGH", notes: "Needed to coordinate duct collar on island hood and PCU duct connection." },
   { id: "OI-07", date: "3/24/2026", source: "MEP Kickoff", title: "Decorative lighting + BOH lighting division", owner: "Basile Studio", priority: "HIGH", notes: "Basile to provide update — determines MEP circuit planning." },
   { id: "OI-08", date: "3/24/2026", source: "MEP Kickoff", title: "Group site visit — Heleo + Suffolk team", owner: "Heleo", priority: "HIGH", notes: "Review existing conditions. Heleo to coordinate timing with Brendan Mingle (Suffolk)." },
@@ -695,6 +726,10 @@ const OPEN_ISSUES = [
 
 // ─── KEY DECISIONS ────────────────────────────────────────────────────────────
 const DECISIONS = [
+  { date: "3/27/2026", title: "Mezzanine reclassified as unoccupied equipment platform (not habitable/storage)", decidedBy: "Team — PCU/Mezzanine Coordination Meeting", impact: "Reduces structural design loads; simplifies framing requirements above the hood", source: "PCU/Mezzanine Meeting 3/27/26" },
+  { date: "3/27/2026", title: "PCU to be suspended (not floor-supported) — best option to maximize headroom", decidedBy: "Team — PCU/Mezzanine Coordination Meeting", impact: "Gains vertical clearance under the PCU; requires structural coordination for suspension points", source: "PCU/Mezzanine Meeting 3/27/26" },
+  { date: "3/27/2026", title: "Exhaust hood clearance revised to 80 inches (down from 9 ft / 108 inches)", decidedBy: "Team — PCU/Mezzanine Coordination Meeting", impact: "More achievable with 16-ft total floor-to-floor height; still tight with 6-ft PCU + framing", source: "PCU/Mezzanine Meeting 3/27/26" },
+  { date: "3/27/2026", title: "No structural issues with hood opening penetrating mezzanine floor — needs exact location + dims", decidedBy: "Hunter Britt (Patterson Engineering)", impact: "Unblocks mezzanine framing; REB Design must now confirm exact hood location for Patterson to frame", source: "PCU/Mezzanine Meeting 3/27/26" },
   { date: "3/27/2026", title: "L1 slab is NOT post-tensioned — L2 and above ARE post-tensioned cable slabs", decidedBy: "Brendan Mingle (Suffolk)", impact: "Low impact — building on L1. Only relevant if ceiling tie-ins required.", source: "Email: Slab Assembly Question" },
   { date: "3/24/2026", title: "14-ton VRF condenser confirmed for Retail 2 space", decidedBy: "Marino Design Consultants", impact: "MEP/electrical load planning", source: "MEP Kickoff 3/24/26" },
   { date: "3/23/2026", title: "Stair location finalized", decidedBy: "Heleo", impact: "Unblocks structural backgrounds and Patterson Revit model", source: "Heleo confirmation 3/23/26" },
@@ -720,6 +755,64 @@ const BUDGET = [
   { firm: "Heleo",         contract: 69000,  paid: 25600, outstanding: 0 },
   { firm: "REB Design",    contract: 17500,  paid: 8750,  outstanding: 0 },
 ];
+
+// ─── STATE (persisted via localStorage) ──────────────────────────────────────
+const STATUS_CYCLE   = ['PENDING','ONGOING','COMPLETE'];
+const PRIORITY_CYCLE = ['URGENT','HIGH','ONGOING','DONE'];
+const PERMIT_CYCLE   = ['PENDING','IN PROGRESS','COMPLETE'];
+
+function loadState() {
+  try { const s = localStorage.getItem('srw-dashboard-v1'); return s ? JSON.parse(s) : {}; }
+  catch(e) { return {}; }
+}
+let STATE = loadState();
+['taskStatus','taskPriority','phaseApproved','paymentPaid','permitStatus'].forEach(k => { if (!STATE[k]) STATE[k] = {}; });
+
+function saveState() {
+  try { localStorage.setItem('srw-dashboard-v1', JSON.stringify(STATE)); } catch(e) {}
+  const f = document.getElementById('save-flash');
+  if (f) { f.classList.add('show'); clearTimeout(f._t); f._t = setTimeout(() => f.classList.remove('show'), 1600); }
+}
+
+function getEffectiveTasks() {
+  return TASKS.map((t, i) => ({
+    ...t, _idx: i,
+    status:   STATE.taskStatus[i]   !== undefined ? STATE.taskStatus[i]   : t.status,
+    priority: STATE.taskPriority[i] !== undefined ? STATE.taskPriority[i] : t.priority,
+  }));
+}
+
+function toggleTaskStatus(idx) {
+  const cur = STATE.taskStatus[idx] !== undefined ? STATE.taskStatus[idx] : TASKS[idx].status;
+  STATE.taskStatus[idx] = STATUS_CYCLE[(STATUS_CYCLE.indexOf(cur) + 1) % STATUS_CYCLE.length];
+  saveState(); applyFilters();
+}
+function toggleTaskPriority(idx) {
+  const cur = STATE.taskPriority[idx] !== undefined ? STATE.taskPriority[idx] : TASKS[idx].priority;
+  STATE.taskPriority[idx] = PRIORITY_CYCLE[(PRIORITY_CYCLE.indexOf(cur) + 1) % PRIORITY_CYCLE.length];
+  saveState(); applyFilters();
+}
+function togglePhaseApproved(idx) {
+  const cur = STATE.phaseApproved[idx] !== undefined ? STATE.phaseApproved[idx] : PHASES[idx].approved;
+  STATE.phaseApproved[idx] = !cur;
+  saveState(); renderPhaseTable();
+}
+function togglePaymentPaid(idx) {
+  const cur = STATE.paymentPaid[idx] !== undefined ? STATE.paymentPaid[idx] : PAYMENT_SCHEDULE[idx].paid;
+  STATE.paymentPaid[idx] = cur === '☑' ? '☐' : '☑';
+  saveState(); renderPaymentSchedule();
+}
+function togglePermitStatus(idx) {
+  const cur = STATE.permitStatus[idx] !== undefined ? STATE.permitStatus[idx] : PERMITS[idx].status;
+  STATE.permitStatus[idx] = PERMIT_CYCLE[(PERMIT_CYCLE.indexOf(cur) + 1) % PERMIT_CYCLE.length];
+  saveState(); renderPermits();
+}
+function resetAllState() {
+  if (!confirm('Reset all status changes back to defaults?')) return;
+  STATE = { taskStatus:{}, taskPriority:{}, phaseApproved:{}, paymentPaid:{}, permitStatus:{} };
+  saveState();
+  applyFilters(); renderPhaseTable(); renderPaymentSchedule(); renderPermits();
+}
 
 // ─── CHARTS ──────────────────────────────────────────────────────────────────
 const CHART_COLORS = ['#c0392b','#d4860a','#2471a3','#1e8449','#8e44ad','#2ecc71'];
@@ -946,7 +1039,9 @@ function renderPaymentLog() {
 // ─── PHASE TABLE ─────────────────────────────────────────────────────────────
 function renderPhaseTable() {
   const firmColors = { 'Basile Studio':'#c47e3a', 'Heleo':'#2471a3', 'REB Design':'#1e8449', 'TBD (via Heleo)':'#888' };
-  const tbody = PHASES.map(p => `
+  const tbody = PHASES.map((p, i) => {
+    const effApproved = STATE.phaseApproved[i] !== undefined ? STATE.phaseApproved[i] : p.approved;
+    return `
     <tr>
       <td style="font-weight:600;">${p.phase}</td>
       <td><span style="color:${firmColors[p.consultant]||'#555'};font-weight:600;">${p.consultant}</span></td>
@@ -954,26 +1049,32 @@ function renderPhaseTable() {
       <td style="font-weight:600;">${p.fee}</td>
       <td style="color:var(--text-secondary);">${p.start}</td>
       <td style="color:var(--text-secondary);">${p.target}</td>
-      <td>${p.approved ? '<span class="badge badge-approved">✅ Approved</span>' : '<span class="badge badge-pending-approval">☐ Pending</span>'}</td>
+      <td>${effApproved
+        ? `<span class="badge clickable badge-approved" onclick="togglePhaseApproved(${i})" title="Click to toggle">✅ Approved</span>`
+        : `<span class="badge clickable badge-pending-approval" onclick="togglePhaseApproved(${i})" title="Click to toggle">☐ Pending</span>`}
+      </td>
       <td style="font-size:11px;color:var(--text-secondary);max-width:220px;">${p.notes}</td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
   document.getElementById('phase-tbody').innerHTML = tbody;
 }
 
 // ─── PAYMENT SCHEDULE TABLE ───────────────────────────────────────────────────
 function renderPaymentSchedule() {
   const vendorColors = { 'Basile Studio':'#c47e3a', 'Heleo':'#2471a3', 'REB Design':'#1e8449' };
-  const tbody = PAYMENT_SCHEDULE.map(p => `
+  const tbody = PAYMENT_SCHEDULE.map((p, i) => {
+    const effPaid = STATE.paymentPaid[i] !== undefined ? STATE.paymentPaid[i] : p.paid;
+    const isPaid = effPaid === '☑';
+    return `
     <tr>
       <td style="font-weight:600;color:${vendorColors[p.vendor]||'#555'};">${p.vendor}</td>
       <td>${p.trigger}</td>
       <td style="font-weight:600;">${p.amount}</td>
       <td>${p.due}</td>
-      <td style="font-size:16px;">${p.paid}</td>
+      <td><span class="badge clickable ${isPaid ? 'badge-paid' : 'badge-unpaid'}" onclick="togglePaymentPaid(${i})" title="Click to toggle paid">${isPaid ? '✅ Paid' : '☐ Unpaid'}</span></td>
       <td style="font-size:11px;color:var(--text-secondary);">${p.notes}</td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
   document.getElementById('payment-schedule-tbody').innerHTML = tbody;
 }
 
@@ -983,13 +1084,14 @@ function renderTasksTable(tasks) {
   const priorityBadge = { URGENT:'badge-urgent 🔴 Urgent', HIGH:'badge-high 🟡 High', ONGOING:'badge-ongoing 🔵 Ongoing', DONE:'badge-done ✅ Done' };
   const statusBadge   = { PENDING:'badge-pending Pending', ONGOING:'badge-ongoing Ongoing', COMPLETE:'badge-complete Complete', TOMORROW:'badge-tomorrow Tomorrow' };
   const rows = tasks.map(t => {
+    const idx = t._idx !== undefined ? t._idx : TASKS.indexOf(t);
     const [pClass, pLabel] = (priorityBadge[t.priority]||'badge-tbd Unknown').split(' ').reduce((a,v,i)=>i===0?[v,a[1]]:[a[0],a[1]+' '+v],['',' ']);
     const [sClass, sLabel] = (statusBadge[t.status]||'badge-tbd Unknown').split(' ').reduce((a,v,i)=>i===0?[v,a[1]]:[a[0],a[1]+' '+v],['',' ']);
     return `<tr>
       <td style="max-width:280px;font-size:12.5px;">${t.deliverable}</td>
       <td style="font-size:11px;color:var(--text-secondary);">${t.requiredBy}</td>
-      <td><span class="badge ${pClass.trim()}">${pLabel.trim()}</span></td>
-      <td><span class="badge ${sClass.trim()}">${sLabel.trim()}</span></td>
+      <td><span class="badge clickable ${pClass.trim()}" onclick="toggleTaskPriority(${idx})" title="Click to cycle priority">${pLabel.trim()}</span></td>
+      <td><span class="badge clickable ${sClass.trim()}" onclick="toggleTaskStatus(${idx})" title="Click to cycle status">${sLabel.trim()}</span></td>
       <td style="font-size:11px;color:var(--text-secondary);">${t.dateDelivered||'—'}</td>
       <td style="font-size:11px;color:var(--text-secondary);max-width:240px;">${t.notes}</td>
     </tr>`;
@@ -1017,11 +1119,10 @@ function applyFilters() {
   const status   = document.getElementById('filter-status').value;
   const priority = document.getElementById('filter-priority').value;
 
-  filteredTasks = TASKS.filter(t => {
+  filteredTasks = getEffectiveTasks().filter(t => {
     if (firm !== 'all') {
-      // match if any of the task's firms includes the filter, or requiredBy includes, or firm is 'Jon Weber' for all tasks
       const matchFirm = (t.firms||[]).includes(firm) || t.requiredBy.includes(firm);
-      const matchJon  = firm === 'Jon Weber'; // Jon owns all tasks
+      const matchJon  = firm === 'Jon Weber';
       if (!matchFirm && !matchJon) return false;
     }
     if (status !== 'all' && t.status !== status) return false;
@@ -1040,12 +1141,12 @@ function resetFilters() {
   document.getElementById('filter-firm').value     = 'all';
   document.getElementById('filter-status').value   = 'all';
   document.getElementById('filter-priority').value = 'all';
-  filteredTasks = [...TASKS];
-  renderKPIs(TASKS);
-  renderAssigneeChart(TASKS);
-  renderTasksTable(TASKS);
-  updateStatusChart(TASKS);
-  updatePriorityChart(TASKS);
+  filteredTasks = getEffectiveTasks();
+  renderKPIs(filteredTasks);
+  renderAssigneeChart(filteredTasks);
+  renderTasksTable(filteredTasks);
+  updateStatusChart(filteredTasks);
+  updatePriorityChart(filteredTasks);
 }
 
 function updateStatusChart(tasks) {
@@ -1099,15 +1200,19 @@ function renderDecisions() {
 
 // ─── PERMIT TRACKER ───────────────────────────────────────────────────────────
 function renderPermits() {
-  const tbody = PERMITS.map(p => `
+  const permitBadgeClass = { 'PENDING':'badge-pending', 'IN PROGRESS':'badge-in-progress', 'COMPLETE':'badge-complete' };
+  const tbody = PERMITS.map((p, i) => {
+    const effStatus = STATE.permitStatus[i] !== undefined ? STATE.permitStatus[i] : p.status;
+    return `
     <tr>
       <td style="font-weight:600;">${p.permit}</td>
       <td style="font-size:11px;color:var(--text-secondary);">${p.authority}</td>
       <td style="font-size:11px;color:var(--text-secondary);">${p.responsible}</td>
       <td style="font-size:11px;color:var(--text-secondary);">${p.target}</td>
-      <td><span class="badge badge-pending">PENDING</span></td>
+      <td><span class="badge clickable ${permitBadgeClass[effStatus]||'badge-pending'}" onclick="togglePermitStatus(${i})" title="Click to cycle status">${effStatus}</span></td>
       <td style="font-size:11px;color:var(--text-secondary);">${p.notes}</td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
   document.getElementById('permits-tbody').innerHTML = tbody;
 }
 
@@ -1145,12 +1250,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const todayStr = TODAY.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   document.getElementById('today-date').textContent = todayStr;
   document.getElementById('footer-date').textContent = todayStr;
+  filteredTasks = getEffectiveTasks();
   renderCountdown();
-  try { initCharts(); } catch(e) { console.warn('Charts unavailable:', e); }
-  renderKPIs(TASKS);
+  initCharts();
+  renderKPIs(filteredTasks);
   renderOpenIssues();
   renderEvents();
-  renderTasksTable(TASKS);
+  renderTasksTable(filteredTasks);
   renderDecisions();
   renderPermits();
   renderBudget();
