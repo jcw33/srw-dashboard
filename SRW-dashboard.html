@@ -630,6 +630,8 @@ const TASKS = [
   { deliverable: "Heleo: Input final hood location into Revit model + distribute to Patterson + MDC team", requiredBy: "Heleo (Barbara Leon)", priority: "URGENT", status: "PENDING", dateDelivered: null, notes: "Action item from 3/27 PCU meeting. Distribute updated model to Hunter Britt (Patterson Engineering) and MDC Mechanical. Depends on REB Design providing hood location first.", firms: ["Heleo"] },
   // ── FROM 3/30 EMAIL THREAD (MEP Kickoff / PCU Coordination) ────────────────
   { deliverable: "Contact Suffolk to loop in fire protection/sprinkler sub for PCU clearance review", requiredBy: "Jon Weber", priority: "URGENT", status: "COMPLETE", dateDelivered: "3/30/2026", notes: "Email sent to Brendan Mingle (Suffolk) 3/30/2026. Asked him to connect Jon with the sub who installed the existing sprinkler system at 575 Upas St for preliminary review of PCU placement in the 18\" sprinkler clearance zone. Awaiting response.", firms: ["Heleo"] },
+  // ── FROM 3/31 EMAIL ATTACHMENT (MEP Kickoff chain — Framing Scheme) ─────────
+  { deliverable: "Respond to Patterson: framing scheme service platform load question", requiredBy: "Patterson Engineering", priority: "URGENT", status: "PENDING", dateDelivered: null, notes: "3/31/2026: Patterson sent framing scheme drawing (large opening for hood). Two open questions: (1) Suspend hood + assoc. equipment from existing structure? (2) Design mezzanine framing as Service Platform — 40 psf / 300 lbs concentrated load? Coordinate with REB Design on hood/equipment weights before answering. Patterson needs direction to finalize mezzanine framing.", firms: ["Heleo"] },
 ];
 
 const PAYMENTS = [
@@ -699,6 +701,7 @@ const EVENTS = [
   { date: "✅ Mar 2026", label: "info", title: "✅ Provide As-Builts / CAD Backgrounds — COMPLETE", firm: "Delivered to Basile, Heleo, and REB Design", type: "Deliverable" },
   { date: "ASAP", label: "overdue", title: "Obtain Existing Structural Plans", firm: "Patterson Eng. via Heleo — slabs confirmed NOT post-tensioned", type: "Deliverable" },
   { date: "ASAP", label: "overdue", title: "Provide Equipment List (food service + mechanical)", firm: "Basile + REB Design — Required per Basile §3.2", type: "Deliverable" },
+  { date: "ASAP", label: "imminent", title: "⚠️ Respond: Patterson framing scheme — service platform + suspension questions", firm: "Patterson Engineering — direction needed to finalize mezzanine framing for hood opening", type: "Structural Decision" },
 ];
 
 // ─── CONTACTS ────────────────────────────────────────────────────────────────
@@ -731,6 +734,7 @@ const OPEN_ISSUES = [
   { id: "OI-09", date: "3/30/2026", source: "Email: MEP Kickoff thread", title: "PCU in 18-inch sprinkler clearance zone — fire protection sub review needed before finalizing placement", owner: "Jon Weber → Suffolk", priority: "URGENT", notes: "Heleo modeled PCU with ~19\" to slab above; sprinkler pipes sit 2–3\" below slab. PCU footprint is 15'×4' — a large ceiling obstruction. UPDATE 3/30/26: Email sent to Brendan Mingle (Suffolk) requesting connection with the sprinkler sub who installed the existing system at 575 Upas St. Awaiting response. Must resolve before finalizing PCU placement." },
   { id: "OI-07", date: "3/24/2026", source: "MEP Kickoff", title: "Decorative lighting + BOH lighting division", owner: "Basile Studio", priority: "HIGH", notes: "Basile to provide update — determines MEP circuit planning." },
   { id: "OI-08", date: "3/31/2026", source: "MEP Kickoff / Email thread", title: "Group site visit — Tue Mar 31, 6:30–7:30 AM", owner: "Heleo", priority: "HIGH", notes: "SCHEDULED: Tuesday March 31, 6:30–7:30 AM. Attendees: Heleo, Patterson, MDC, REB, Accurex, Suffolk. Review existing conditions at 575 Upas St." },
+  { id: "OI-10", date: "3/31/2026", source: "Email attachment: Framing Scheme (MEP Kickoff chain)", title: "Mezzanine framing scheme — service platform designation + suspension decision unresolved", owner: "Patterson Engineering → Jon/Team", priority: "URGENT", notes: "3/31/2026: Patterson sent framing scheme drawing with large opening for hood. Two open questions require team direction: (1) Suspend hood + associated equipment from existing structure? (2) Design mezzanine framing as Service Platform at 40 psf / 300 lb concentrated load? Must coordinate with REB Design on hood/equipment weights. Patterson cannot finalize mezzanine framing without answers." },
 ];
 
 // ─── KEY DECISIONS ────────────────────────────────────────────────────────────
