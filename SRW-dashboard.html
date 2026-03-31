@@ -628,6 +628,8 @@ const TASKS = [
   { deliverable: "Accurex: Send Revit families — normal canopy hood + 6-inch tapered hood", requiredBy: "Accurex (Ameer Tillman)", priority: "URGENT", status: "PENDING", dateDelivered: null, notes: "Action item from 3/27 PCU meeting. Was to be sent immediately after meeting (3/27). Needed for Revit model coordination.", firms: ["Heleo"] },
   { deliverable: "REB Design: Establish exact hood location + send plan with dashed-line guidelines for Revit model", requiredBy: "REB Design (Caroline / Andrea)", priority: "URGENT", status: "PENDING", dateDelivered: null, notes: "Action item from 3/27 PCU meeting. Dashed-line plan needed so Heleo can input final hood location into Revit. Patterson needs exact location + dims for mezzanine framing.", firms: ["REB Design"] },
   { deliverable: "Heleo: Input final hood location into Revit model + distribute to Patterson + MDC team", requiredBy: "Heleo (Barbara Leon)", priority: "URGENT", status: "PENDING", dateDelivered: null, notes: "Action item from 3/27 PCU meeting. Distribute updated model to Hunter Britt (Patterson Engineering) and MDC Mechanical. Depends on REB Design providing hood location first.", firms: ["Heleo"] },
+  // ── FROM 3/30 EMAIL THREAD (MEP Kickoff / PCU Coordination) ────────────────
+  { deliverable: "Contact Suffolk to loop in fire protection/sprinkler sub for PCU clearance review", requiredBy: "Jon Weber", priority: "URGENT", status: "PENDING", dateDelivered: null, notes: "From Barbara Leon email 3/30. PCU placement is in the 18\" sprinkler clearance zone. Heleo needs preliminary guidance from a fire protection sub before proceeding. Ask Suffolk to connect with the sub who installed existing sprinklers, or find a bidding sub willing to review.", firms: ["Heleo"] },
 ];
 
 const PAYMENTS = [
@@ -687,7 +689,8 @@ const EVENTS = [
   { date: "Mar 27, 2026", label: "overdue", title: "⚠️ Respond to 3/24 MEP Kickoff Minutes — Past Due", firm: "Heleo (Barbara Leon) — deadline was 3/27. Confirm if response was sent.", type: "Deadline" },
   { date: "Mar 28, 2026", label: "upcoming", title: "✅ Heleo Invoice #167792 — PAID", firm: "Heleo | $7,400 — Check #1012", type: "Payment" },
   { date: "Mar 26, 2026", label: "overdue", title: "⚠️ Basile Outstanding Balance — $10,705", firm: "Basile Studio | Invoices 10263 ($30) + 10315 ($5,200) + 10390 ($5,475)", type: "Payment Due" },
-  { date: "~Mar 26–28, 2026", label: "imminent", title: "3D Scan of Existing Piping — This Week", firm: "Heleo / all teams — maps existing piping for MEP/duct coordination on mezzanine", type: "Site Activity" },
+  { date: "Mar 31, 2026", label: "imminent", title: "🏗️ Group Site Visit — 575 Upas St", firm: "6:30–7:30 AM | Heleo, Patterson, MDC, REB, Accurex, Suffolk — review existing conditions", type: "Site Visit" },
+  { date: "~Mar 26–28, 2026", label: "info", title: "3D Scan of Existing Piping — This Week", firm: "Heleo / all teams — maps existing piping for MEP/duct coordination on mezzanine", type: "Site Activity" },
   { date: "~Apr 8–14, 2026", label: "upcoming", title: "Target Permit Submittal", firm: "Heleo + Patterson Engineering", type: "Milestone" },
   { date: "~Apr 13, 2026", label: "upcoming", title: "Drawings + Equipment Schedules to MEP", firm: "REB Design → Marino Design Consultants | Week of April 13", type: "Milestone" },
   { date: "~Apr 15, 2026", label: "upcoming", title: "Structural DD Target Complete", firm: "Patterson Engineering (4-week timeline from Mar 18 kickoff)", type: "Milestone" },
@@ -701,15 +704,19 @@ const EVENTS = [
 const CONTACTS = [
   { firm: "She Rode West", name: "Jon Weber", role: "Project Coordinator / Owner", email: "jon@sherodewest.com", phone: "—", color: "#c47e3a" },
   { firm: "Heleo (Architecture / AOR)", name: "Carlos E. Hernandez", role: "Principal / AOR", email: "carlos@heleo.co", phone: "—", color: "#2471a3" },
-  { firm: "Heleo (Architecture / AOR)", name: "Barbara Leon", role: "Project Manager", email: "barbara@heleo.co", phone: "—", color: "#2471a3" },
+  { firm: "Heleo (Architecture / AOR)", name: "Barbara Leon", role: "Project Manager / AIA Principal", email: "barbara@heleo.co", phone: "O: 619.393.6635 | M: 818.795.4176", color: "#2471a3" },
+  { firm: "Heleo (Architecture / AOR)", name: "Francisco", role: "Team Member", email: "francisco@heleo.co", phone: "—", color: "#2471a3" },
   { firm: "Suffolk Construction (Landlord GC)", name: "Brendan Mingle", role: "Project Manager", email: "BMingle@suffolk.com", phone: "+1 (339) 213-1840", color: "#555" },
   { firm: "Patterson Engineering (Structural)", name: "Lianne Bell", role: "Structural Engineer", email: "lianne@pattersoneng.com", phone: "—", color: "#8e44ad" },
   { firm: "Patterson Engineering (Structural)", name: "Hunter Britt", role: "Structural Engineer — PCU/Mezzanine Lead", email: "—", phone: "—", color: "#8e44ad" },
-  { firm: "Accurex (Kitchen Ventilation)", name: "Ameer Tillman", role: "Equipment Representative — PCU + Hood", email: "—", phone: "—", color: "#7d6608" },
+  { firm: "Accurex (Kitchen Ventilation)", name: "Ameer Tillman", role: "Account Manager — Southern California & Hawaii", email: "Ameer.Tillman@accurex.com", phone: "C: 509-430-5326", color: "#7d6608" },
+  { firm: "MPE Consulting", name: "Alex B.", role: "Consultant (MEP coordination)", email: "alexb@mpeconsulting.com", phone: "—", color: "#888" },
   { firm: "REB Design (Food Service)", name: "Andrea Hamilton", role: "Food Service Designer", email: "andrea@reb-design.com", phone: "—", color: "#1e8449" },
   { firm: "Basile Studio (Interior Design)", name: "Ashley", role: "Interior Design", email: "Ashley@basilestudio.com", phone: "—", color: "#c0392b" },
   { firm: "Basile Studio (Interior Design)", name: "Paul", role: "Interior Design", email: "Paul@basilestudio.com", phone: "—", color: "#c0392b" },
-  { firm: "Marino Design Consultants (MEP)", name: "—", role: "MEP Engineering (via Heleo)", email: "—", phone: "—", color: "#888" },
+  { firm: "Marino Design Consulting / MDC (MEP)", name: "Carlos Santiago", role: "Project Engineer — MEP", email: "carlos@mdcmechanical.com", phone: "Direct: 619-241-4734 | Office: 619-550-2615 x405", color: "#888" },
+  { firm: "Marino Design Consulting / MDC (MEP)", name: "Gerald", role: "MEP Team Member", email: "gerald@mdcmechanical.com", phone: "—", color: "#888" },
+  { firm: "Marino Design Consulting / MDC (MEP)", name: "Trevor Prophet", role: "MEP Team Member", email: "trevor@mdcmechanical.com", phone: "—", color: "#888" },
 ];
 
 // ─── OPEN ISSUES ──────────────────────────────────────────────────────────────
@@ -720,12 +727,15 @@ const OPEN_ISSUES = [
   { id: "OI-04", date: "3/27/2026", source: "PCU/Mezzanine Meeting", title: "Exact PCU + hood location and dimensions needed for Patterson mezzanine framing", owner: "REB Design → Heleo → Patterson", priority: "URGENT", notes: "UPDATE 3/27/26: Patterson (Hunter Britt) confirmed no structural issues with hood penetrating mezzanine. REB must send dashed-line plan with hood location. Heleo inputs into Revit and distributes to Patterson + MDC. Blocks all structural framing." },
   { id: "OI-05", date: "3/27/2026", source: "PCU/Mezzanine Meeting", title: "Accurex Revit families + fan rotation — outstanding from 3/27 meeting", owner: "Accurex (Ameer Tillman)", priority: "URGENT", notes: "UPDATE 3/27/26: Clearance revised to 80\" (from 9 ft). Accurex committed to sending Revit families immediately after 3/27 meeting and investigating low-profile hood (+6 inches). Fan rotation to be modified. Confirm receipt with Heleo." },
   { id: "OI-06", date: "3/24/2026", source: "MEP Kickoff", title: "REB to send electrostatic PCU drawings to Marino (MEP)", owner: "REB Design → Marino", priority: "HIGH", notes: "Needed to coordinate duct collar on island hood and PCU duct connection." },
+  { id: "OI-09", date: "3/30/2026", source: "Email: MEP Kickoff thread", title: "PCU in 18-inch sprinkler clearance zone — fire protection sub review needed before finalizing placement", owner: "Jon Weber → Suffolk", priority: "URGENT", notes: "Heleo modeled PCU with ~19\" to slab above; sprinkler pipes sit 2–3\" below slab. PCU footprint is 15'×4' — a large ceiling obstruction. Barbara Leon requests Jon contact Suffolk to loop in the existing sprinkler sub (or a bidding sub) for preliminary guidance. Must resolve before deferred submittal." },
   { id: "OI-07", date: "3/24/2026", source: "MEP Kickoff", title: "Decorative lighting + BOH lighting division", owner: "Basile Studio", priority: "HIGH", notes: "Basile to provide update — determines MEP circuit planning." },
-  { id: "OI-08", date: "3/24/2026", source: "MEP Kickoff", title: "Group site visit — Heleo + Suffolk team", owner: "Heleo", priority: "HIGH", notes: "Review existing conditions. Heleo to coordinate timing with Brendan Mingle (Suffolk)." },
+  { id: "OI-08", date: "3/31/2026", source: "MEP Kickoff / Email thread", title: "Group site visit — Tue Mar 31, 6:30–7:30 AM", owner: "Heleo", priority: "HIGH", notes: "SCHEDULED: Tuesday March 31, 6:30–7:30 AM. Attendees: Heleo, Patterson, MDC, REB, Accurex, Suffolk. Review existing conditions at 575 Upas St." },
 ];
 
 // ─── KEY DECISIONS ────────────────────────────────────────────────────────────
 const DECISIONS = [
+  { date: "3/30/2026", title: "L2 post-tensioned slab CAN support PCU + hood suspension — Unistrut detail required, scan before drilling", decidedBy: "Lianne Bell (Patterson Engineering)", impact: "Clears path for PCU suspension from L2 slab. Detail must use Unistrut for anchor flexibility. Slab must be scanned before drilling to avoid P/T cables.", source: "Email thread: MEP Kickoff / PCU Coordination 3/30/26" },
+  { date: "3/30/2026", title: "PCU placement enters 18-inch sprinkler clearance zone — fire protection sub review required", decidedBy: "Heleo (Barbara Leon)", impact: "Cannot finalize PCU placement without sign-off from fire protection/sprinkler sub. Jon to engage Suffolk or bidding sub for preliminary review.", source: "Email thread: MEP Kickoff / PCU Coordination 3/30/26" },
   { date: "3/27/2026", title: "Mezzanine reclassified as unoccupied equipment platform (not habitable/storage)", decidedBy: "Team — PCU/Mezzanine Coordination Meeting", impact: "Reduces structural design loads; simplifies framing requirements above the hood", source: "PCU/Mezzanine Meeting 3/27/26" },
   { date: "3/27/2026", title: "PCU to be suspended (not floor-supported) — best option to maximize headroom", decidedBy: "Team — PCU/Mezzanine Coordination Meeting", impact: "Gains vertical clearance under the PCU; requires structural coordination for suspension points", source: "PCU/Mezzanine Meeting 3/27/26" },
   { date: "3/27/2026", title: "Exhaust hood clearance revised to 80 inches (down from 9 ft / 108 inches)", decidedBy: "Team — PCU/Mezzanine Coordination Meeting", impact: "More achievable with 16-ft total floor-to-floor height; still tight with 6-ft PCU + framing", source: "PCU/Mezzanine Meeting 3/27/26" },
