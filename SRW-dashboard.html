@@ -428,7 +428,7 @@
     <div class="kpi-card budget">
       <div class="kpi-label">Total Paid</div>
       <div class="kpi-value" id="kpi-paid">—</div>
-      <div class="kpi-sub">Of $210,960+ committed</div>
+      <div class="kpi-sub">Of $222,166+ committed</div>
     </div>
     <div class="kpi-card urgent">
       <div class="kpi-label">Outstanding</div>
@@ -639,14 +639,20 @@ const PAYMENTS = [
   { date: "Oct 2025", firm: "Basile Studio", invoice: "RET-001", description: "20% Retainer — contract execution", amount: 24892, method: "Check", status: "PAID", notes: "Non-refundable; credited to final invoice" },
   { date: "Oct 2025", firm: "Heleo", invoice: "RET-001", description: "Retainer — prior to commencement", amount: 6000, method: "Check", status: "PAID", notes: "Non-refundable" },
   { date: "Sep 2025", firm: "REB Design", invoice: "1615", description: "Food Service Design Deposit (50% of $17,500)", amount: 8750, method: "Check", status: "PAID", notes: "Balance of $8,750 due upon plan submission" },
-  { date: "Oct 2025", firm: "Basile Studio", invoice: "10263", description: "Payment toward Invoice 10263 (Oct 2025)", amount: 3300, method: "Check/ACH", status: "PARTIAL", notes: "Invoice $3,330 | Paid $3,300 | Balance owed $30" },
-  { date: "Dec 2025", firm: "Basile Studio", invoice: "10315", description: "Invoice 10315 (Dec 2025) — fully paid", amount: 8875, method: "Check/ACH", status: "PAID", notes: "Invoice $8,875 | Paid in full. $3,675 paid initially; $5,200 balance paid per 3/30/2026." },
-  { date: "Feb 2026", firm: "Basile Studio", invoice: "10390", description: "Payment toward Invoice 10390 (Feb 2026)", amount: 5200, method: "Check/ACH", status: "PARTIAL", notes: "Invoice $10,675 | Paid $5,200 | Balance owed $5,475" },
-  { date: "Jan 2026", firm: "Basile Studio", invoice: "10348", description: "Invoice 10348 — Jan 2026 (Prelim Design, Client Meetings, Ideation, Consultant Coord)", amount: 6390, method: "—", status: "PENDING", notes: "Invoice $6,390 | Period: 1/1–1/31/2026 | Due upon receipt | Covers Preliminary Design ($4,765), Client Meetings ($750), Principal Ideation Block ($675), Consultant Meetings & Coordination ($200)" },
+  { date: "Dec 2025", firm: "Basile Studio", invoice: "10263", description: "Invoice 10263 — paid in full", amount: 3330, method: "Check #1000", status: "PAID", notes: "Invoice $3,330 | Paid in full | Check #1000, 12/15/2025" },
+  { date: "Nov 2025", firm: "Basile Studio", invoice: "10297", description: "Invoice 10297 — Nov 2025", amount: 3675, method: "Check #1004", status: "PAID", notes: "Invoice $3,675 | Paid in full | Check #1004, 1/14/2026" },
+  { date: "Dec 2025", firm: "Basile Studio", invoice: "10315", description: "Invoice 10315 — Dec 2025", amount: 5200, method: "Check #1009", status: "PAID", notes: "Invoice $5,200 | Paid in full | Check #1009, 2/26/2026" },
+  { date: "Feb 2026", firm: "Basile Studio", invoice: "10390", description: "Invoice 10390 — Feb 2026", amount: 4285, method: "Check #1011", status: "PAID", notes: "Invoice $4,285 | Paid in full | Check #1011, 3/20/2026" },
+  { date: "Jan 2026", firm: "Basile Studio", invoice: "10348", description: "Invoice 10348 — Jan 2026 (Prelim Design, Client Meetings, Ideation, Consultant Coord)", amount: 6390, method: "Check #1013", status: "PAID", notes: "Invoice $6,390 | Paid in full | Check #1013, 3/31/2026 | Covers Preliminary Design ($4,765), Client Meetings ($750), Principal Ideation Block ($675), Consultant Meetings & Coordination ($200)" },
   { date: "Dec 2025", firm: "Heleo", invoice: "167744", description: "Schematic Design 50% — Kickoff, plans setup, code analysis", amount: 4000, method: "ACH", status: "PAID", notes: "Paid in full | SD phase 50% complete" },
   { date: "Jan 2026", firm: "Heleo", invoice: "167756", description: "Schematic Design — balance", amount: 4000, method: "ACH", status: "PAID", notes: "Paid in full | SD phase 100% complete" },
   { date: "Feb 2026", firm: "Heleo", invoice: "167776", description: "Design Development 30%", amount: 4200, method: "ACH", status: "PAID", notes: "Paid in full | DD phase 30% complete" },
   { date: "Mar 2026", firm: "Heleo", invoice: "167792", description: "Design Development + Patterson Structural Retainer (cost+15%)", amount: 7400, method: "Check #1012", status: "PAID", notes: "Paid in full | Check #1012 | DD + Patterson Structural retainer" },
+  { date: "Dec 2025", firm: "Delmore Greene LLP", invoice: "66489/66634/66754/66872/66980", description: "Legal services — 5 invoices (Jun–Nov 2025), paid in full", amount: 4552, method: "Check #1002", status: "PAID", notes: "Bills: $351.50 (Jun) + $2,316.50 (Jun) + $1,264.00 (Aug) + $395.00 (Nov) + $225.00 (Oct) = $4,552 | Check #1002, 12/30/2025" },
+  { date: "Dec 2025", firm: "G.R. Bill Consulting, LLC", invoice: "—", description: "Consulting — Bill 1 (Dec 2025)", amount: 3450.50, method: "Check #1003", status: "PAID", notes: "Invoice $3,450.50 | Check #1003, 12/31/2025" },
+  { date: "Feb 2026", firm: "G.R. Bill Consulting, LLC", invoice: "—", description: "Consulting — Bill 2 (Feb 2026)", amount: 503.66, method: "Check #1006", status: "PAID", notes: "Invoice $503.66 | Check #1006, 2/6/2026" },
+  { date: "Mar 2026", firm: "G.R. Bill Consulting, LLC", invoice: "—", description: "Consulting — Bill 3 (Mar 2026)", amount: 500, method: "Check #1010", status: "PAID", notes: "Invoice $500.00 | Check #1010, 3/9/2026" },
+  { date: "Feb 2026", firm: "Equity Builders, Inc.", invoice: "i3743", description: "Equity Builders — Invoice i3743", amount: 1750, method: "Check #1008", status: "PAID", notes: "Invoice $1,750 | Paid in full | Check #1008, 2/26/2026" },
 ];
 
 const PHASES = [
@@ -692,7 +698,7 @@ const EVENTS = [
   { date: "Apr 1, 2026", label: "imminent", title: "⚠️ Respond to 3/27 PCU/Mezzanine Meeting Minutes", firm: "Heleo (Barbara Leon) — 3-business-day window closes 4/1/2026", type: "Deadline" },
   { date: "Mar 27, 2026", label: "overdue", title: "⚠️ Respond to 3/24 MEP Kickoff Minutes — Past Due", firm: "Heleo (Barbara Leon) — deadline was 3/27. Confirm if response was sent.", type: "Deadline" },
   { date: "Mar 28, 2026", label: "upcoming", title: "✅ Heleo Invoice #167792 — PAID", firm: "Heleo | $7,400 — Check #1012", type: "Payment" },
-  { date: "Mar 31, 2026", label: "overdue", title: "⚠️ Basile Outstanding Balance — $11,895", firm: "Basile Studio | Invoice 10263 ($30) + 10390 ($5,475) + 10348 ($6,390 due upon receipt)", type: "Payment Due" },
+  { date: "✅ Mar 31, 2026", label: "info", title: "✅ Basile — All Invoices Paid in Full", firm: "Basile Studio | 10263, 10297, 10315, 10390, 10348 all paid per QB as of 3/31/2026", type: "Payment" },
   { date: "✅ Mar 31, 2026", label: "info", title: "✅ Group Site Visit + 3D Scan — COMPLETE", firm: "6:30–7:30 AM | Heleo, Patterson, MDC, REB, Accurex, Suffolk — existing conditions reviewed, 3D scan completed", type: "Site Visit" },
   { date: "~Apr 8–14, 2026", label: "upcoming", title: "Target Permit Submittal", firm: "Heleo + Patterson Engineering", type: "Milestone" },
   { date: "~Apr 13, 2026", label: "upcoming", title: "Drawings + Equipment Schedules to MEP", firm: "REB Design → Marino Design Consultants | Week of April 13", type: "Milestone" },
@@ -769,9 +775,12 @@ const PERMITS = [
 
 // ─── BUDGET DATA ────────────────────────────────────────────────────────────
 const BUDGET = [
-  { firm: "Basile Studio", contract: 124460, paid: 42267, outstanding: 11895 },
-  { firm: "Heleo",         contract: 69000,  paid: 25600, outstanding: 0 },
-  { firm: "REB Design",    contract: 17500,  paid: 8750,  outstanding: 0 },
+  { firm: "Basile Studio",          contract: 124460, paid: 47772, outstanding: 0 },
+  { firm: "Heleo",                  contract: 69000,  paid: 25600, outstanding: 0 },
+  { firm: "REB Design",             contract: 17500,  paid: 8750,  outstanding: 0 },
+  { firm: "Delmore Greene LLP",     contract: 4552,   paid: 4552,  outstanding: 0 },
+  { firm: "G.R. Bill Consulting",   contract: 4454.16, paid: 4454.16, outstanding: 0 },
+  { firm: "Equity Builders, Inc.",  contract: 1750,   paid: 1750,  outstanding: 0 },
 ];
 
 // ─── STATE (persisted via localStorage) ──────────────────────────────────────
