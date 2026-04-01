@@ -973,8 +973,7 @@ function renderKPIs(tasks) {
   const open     = tasks.filter(t=>t.status!=='COMPLETE').length;
   const total    = tasks.length;
   const paid     = PAYMENTS.filter(p=>p.status!=='UNPAID').reduce((s,p)=>s+p.amount,0);
-  const outstanding = PAYMENTS.filter(p=>p.status==='UNPAID').reduce((s,p)=>s+p.amount,0)
-                    + 11895; // Basile outstanding balance
+  const outstanding = PAYMENTS.filter(p=>p.status==='UNPAID').reduce((s,p)=>s+p.amount,0);
   document.getElementById('kpi-urgent').textContent = urgent;
   document.getElementById('kpi-high').textContent   = high;
   document.getElementById('kpi-done').textContent   = done;
@@ -1057,9 +1056,6 @@ function renderPaymentLog() {
         </tr>
       </tfoot>
     </table>
-    <div style="margin-top:10px;padding:8px 10px;background:#fdf6e3;border-radius:6px;font-size:11px;color:#7a6000;">
-      ⚠️ Basile outstanding across 3 invoices: $11,895 unpaid (Invoice 10263 $30 + 10390 $5,475 + 10348 $6,390)
-    </div>
   `;
 }
 
