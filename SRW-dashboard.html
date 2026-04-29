@@ -953,12 +953,31 @@ async function saveToFile() {
   renderOpenIssues();
 
   const blob = new Blob([src], { type: 'text/html' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url; a.download = 'SRW-dashboard.html';
-  document.body.appendChild(a); a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+
+  if (window.showSaveFilePicker) {
+    // File System Access API — lets user save directly over the original file
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: 'SRW-dashboard.html',
+        types: [{ description: 'HTML file', accept: { 'text/html': ['.html'] } }]
+      });
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      const f = document.getElementById('save-flash');
+      if (f) { f.textContent = '💾 File saved'; f.classList.add('show'); clearTimeout(f._t); f._t = setTimeout(() => { f.classList.remove('show'); f.textContent = '💾 Saved'; }, 2200); }
+    } catch(e) {
+      if (e.name !== 'AbortError') alert('Save failed: ' + e.message);
+    }
+  } else {
+    // Fallback for browsers without File System Access API
+    const url = URL.createObjectURL(blob);
+    const a   = document.createElement('a');
+    a.href = url; a.download = 'SRW-dashboard.html';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
 }
 
 // ─── CHARTS ──────────────────────────────────────────────────────────────────
