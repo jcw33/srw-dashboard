@@ -439,22 +439,13 @@
 
   <!-- OPEN ISSUES -->
   <section class="full-width table-section">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-      <div class="section-title" style="margin-bottom:0;">🚨 Open Issues &amp; Unresolved Questions <span id="issues-completed-count" style="font-size:11px;color:var(--text-secondary);font-weight:400;"></span></div>
-      <button id="toggle-completed-issues-btn" onclick="toggleShowCompletedIssues()" style="padding:4px 12px;border:1px solid #e0d5ca;border-radius:14px;background:#faf7f3;font-size:11px;font-weight:600;color:var(--text-secondary);cursor:pointer;">Show Completed</button>
-    </div>
+    <div class="section-title">🚨 Open Issues &amp; Unresolved Questions</div>
     <div id="open-issues-grid"></div>
   </section>
 
   <!-- UPCOMING DEADLINES -->
   <section class="full-width table-section">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-      <div class="section-title" style="margin-bottom:0;">⏰ Upcoming Events &amp; Deadlines — Next 30 Days <span id="events-completed-count" style="font-size:11px;color:var(--text-secondary);font-weight:400;"></span></div>
-      <div style="display:flex;gap:8px;">
-        <button id="toggle-completed-events-btn" onclick="toggleShowCompletedEvents()" style="padding:4px 12px;border:1px solid #e0d5ca;border-radius:14px;background:#faf7f3;font-size:11px;font-weight:600;color:var(--text-secondary);cursor:pointer;">Show Completed</button>
-        <button onclick="saveToFile()" style="padding:4px 12px;border:1px solid #1e8449;border-radius:14px;background:#f0f7f0;font-size:11px;font-weight:600;color:#1e8449;cursor:pointer;">💾 Save to File</button>
-      </div>
-    </div>
+    <div class="section-title">⏰ Upcoming Events &amp; Deadlines — Next 30 Days</div>
     <div class="events-grid" id="events-grid"></div>
   </section>
 
@@ -727,12 +718,14 @@ const PAYMENT_SCHEDULE = [
 ];
 
 const EVENTS = [
-  {"date": "ASAP", "label": "overdue", "title": "Provide Equipment List (food service + mechanical)", "firm": "Basile + REB Design — Required per Basile §3.2", "type": "Deliverable"},
-  {"date": "ASAP", "label": "imminent", "title": "⚠️ Respond to Patterson: framing scheme service platform + suspension questions", "firm": "Patterson Engineering — coordinate with REB on hood/equipment weights first", "type": "Structural Decision"},
-  {"date": "This week (4/23–4/27)", "label": "imminent", "title": "Mezzanine coordination call — spiral stair + catwalk concept", "firm": "Heleo + Patterson + MDC + REB Design + Basile", "type": "Meeting"},
-  {"date": "End of April 2026", "label": "upcoming", "title": "REB Food Service Construction Set", "firm": "REB Design — pending walk-in cooler layout approval", "type": "Milestone"},
-  {"date": "Mid-Summer 2026", "label": "upcoming", "title": "Construction Start Target", "firm": "Suffolk / GC", "type": "Milestone"},
-  {"date": "Feb 1, 2027", "label": "info", "title": "🤠 Restaurant Opening Target", "firm": "She Rode West — 575 Upas St, San Diego", "type": "Milestone"}
+  { date: "TODAY — 4/23", label: "overdue", title: "⚠️ Reply to Heleo: availability for mezzanine coordination call", firm: "Jon Weber — options: 4/23 9/10/12am or 4/27 10am/11am/1pm", type: "Action Required" },
+  { date: "ASAP", label: "overdue", title: "Decide: Bifold door mirror — $40K / 12 weeks vs. keep as-built", firm: "Jon Weber — door is being crated for site; Suffolk needs direction", type: "Decision Required" },
+  { date: "ASAP", label: "overdue", title: "Provide Equipment List (food service + mechanical)", firm: "Basile + REB Design — Required per Basile §3.2", type: "Deliverable" },
+  { date: "ASAP", label: "imminent", title: "⚠️ Respond to Patterson: framing scheme service platform + suspension questions", firm: "Patterson Engineering — coordinate with REB on hood/equipment weights first", type: "Structural Decision" },
+  { date: "This week (4/23–4/27)", label: "imminent", title: "Mezzanine coordination call — spiral stair + catwalk concept", firm: "Heleo + Patterson + MDC + REB Design + Basile", type: "Meeting" },
+  { date: "End of April 2026", label: "upcoming", title: "REB Food Service Construction Set", firm: "REB Design — pending walk-in cooler layout approval", type: "Milestone" },
+  { date: "Mid-Summer 2026", label: "upcoming", title: "Construction Start Target", firm: "Suffolk / GC", type: "Milestone" },
+  { date: "Feb 1, 2027", label: "info", title: "🤠 Restaurant Opening Target", firm: "She Rode West — 575 Upas St, San Diego", type: "Milestone" },
 ];
 
 // ─── CONTACTS ────────────────────────────────────────────────────────────────
@@ -836,9 +829,7 @@ function loadState() {
   catch(e) { return {}; }
 }
 let STATE = loadState();
-['taskStatus','taskPriority','phaseApproved','paymentPaid','permitStatus','completedEvents','completedIssues'].forEach(k => { if (!STATE[k]) STATE[k] = {}; });
-if (STATE.showCompletedEvents  === undefined) STATE.showCompletedEvents  = false;
-if (STATE.showCompletedIssues  === undefined) STATE.showCompletedIssues  = false;
+['taskStatus','taskPriority','phaseApproved','paymentPaid','permitStatus'].forEach(k => { if (!STATE[k]) STATE[k] = {}; });
 
 function saveState() {
   try { localStorage.setItem('srw-dashboard-v1', JSON.stringify(STATE)); } catch(e) {}
@@ -881,76 +872,11 @@ function togglePermitStatus(idx) {
 }
 function resetAllState() {
   if (!confirm('Reset all status changes back to defaults?')) return;
-  STATE = { taskStatus:{}, taskPriority:{}, phaseApproved:{}, paymentPaid:{}, permitStatus:{}, completedEvents:{}, completedIssues:{}, showCompletedEvents:false, showCompletedIssues:false };
+  STATE = { taskStatus:{}, taskPriority:{}, phaseApproved:{}, paymentPaid:{}, permitStatus:{} };
   saveState();
   applyFilters(); renderPhaseTable(); renderPaymentSchedule(); renderPermits();
 }
 
-// ─── MARK DONE — EVENTS & OPEN ISSUES ────────────────────────────────────────
-function markEventDone(idx) {
-  STATE.completedEvents[idx] = !STATE.completedEvents[idx];
-  saveState(); renderEvents();
-}
-function markIssueDone(id) {
-  STATE.completedIssues[id] = !STATE.completedIssues[id];
-  saveState(); renderOpenIssues();
-}
-function toggleShowCompletedEvents() {
-  STATE.showCompletedEvents = !STATE.showCompletedEvents;
-  saveState(); renderEvents();
-}
-function toggleShowCompletedIssues() {
-  STATE.showCompletedIssues = !STATE.showCompletedIssues;
-  saveState(); renderOpenIssues();
-}
-
-// ─── SAVE TO FILE ─────────────────────────────────────────────────────────────
-
-async function saveToFile() {
-  const activeEvents = EVENTS.filter((_, idx) => !STATE.completedEvents[idx]);
-  const activeIssues = OPEN_ISSUES.filter(i => !STATE.completedIssues[i.id]);
-  const removedCount = (EVENTS.length - activeEvents.length) + (OPEN_ISSUES.length - activeIssues.length);
-
-  if (!removedCount) { alert('Nothing marked as done yet.'); return; }
-
-  const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-
-  if (!isLocal) {
-    // On GitHub Pages or file:// — saving not possible from here
-    alert("You're viewing the shared link.\n\nTo save permanently:\n1. Open serve-dashboard.command from your She Rode West Dashboard folder\n2. Use the localhost tab that opens\n3. Mark items done there and press Save to File\n4. Push to GitHub as usual\n\nYour marks here are NOT lost — they're saved in this browser's memory.");
-    return;
-  }
-
-  // On localhost — send active arrays to server; Python handles file rewrite
-  try {
-    const res    = await fetch('/save', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ active_events: activeEvents, active_issues: activeIssues })
-    });
-    const result = await res.json();
-    if (!result.ok) throw new Error(result.error || 'unknown');
-
-    // Update in-memory arrays to match what was saved
-    EVENTS.splice(0, EVENTS.length, ...activeEvents);
-    OPEN_ISSUES.splice(0, OPEN_ISSUES.length, ...activeIssues);
-
-    // Clear completed state and re-render
-    STATE.completedEvents = {}; STATE.completedIssues = {};
-    STATE.showCompletedEvents = false; STATE.showCompletedIssues = false;
-    saveState(); renderEvents(); renderOpenIssues();
-
-    const f = document.getElementById('save-flash');
-    if (f) {
-      f.textContent = result.synced_gd ? '💾 Saved + synced to Drive' : '💾 Saved to file';
-      f.classList.add('show'); clearTimeout(f._t);
-      f._t = setTimeout(() => { f.classList.remove('show'); f.textContent = '💾 Saved'; }, 2500);
-    }
-  } catch(e) {
-    // Don't clear state — let user try again
-    alert('Save failed: ' + e.message + '\n\nMake sure serve-dashboard.command is still running.');
-  }
-}
 
 // ─── CHARTS ──────────────────────────────────────────────────────────────────
 const CHART_COLORS = ['#c0392b','#d4860a','#2471a3','#1e8449','#8e44ad','#2ecc71'];
@@ -1097,29 +1023,17 @@ function renderKPIs(tasks) {
 // ─── EVENTS ─────────────────────────────────────────────────────────────────
 function renderEvents() {
   const grid = document.getElementById('events-grid');
-  const showCompleted = STATE.showCompletedEvents;
-  let completedCount = 0;
-  const cards = EVENTS.map((e, idx) => {
-    const done = !!STATE.completedEvents[idx];
-    if (done) completedCount++;
-    if (done && !showCompleted) return '';
-    return `
-      <div class="event-card ${e.label}" style="${done ? 'opacity:0.42;' : ''}">
-        <div class="event-date ${e.label}" style="${done ? 'text-decoration:line-through;' : ''}">${e.date}</div>
-        <div class="event-title" style="${done ? 'text-decoration:line-through;color:var(--text-secondary);' : ''}">${e.title}</div>
-        <div class="event-firm">${e.firm}</div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
-          <span class="badge badge-${e.label==='overdue'?'unpaid':'pending'}" style="font-size:10px;">${e.type}</span>
-          <button onclick="markEventDone(${idx})" style="font-size:10px;padding:2px 9px;border-radius:10px;border:1px solid ${done?'#1e8449':'#d0c8c0'};background:${done?'#e8f5e9':'#faf7f3'};color:${done?'#1e8449':'#888'};cursor:pointer;font-weight:600;transition:all .15s;">${done ? '✓ Done' : 'Mark Done'}</button>
-        </div>
-      </div>`;
-  }).join('');
-  grid.innerHTML = cards || '<div style="color:var(--text-secondary);font-size:12px;padding:8px 0;">No active items.</div>';
-  // Update count label and toggle button
-  const countEl = document.getElementById('events-completed-count');
-  const toggleBtn = document.getElementById('toggle-completed-events-btn');
-  if (countEl) countEl.textContent = completedCount ? `(${completedCount} completed)` : '';
-  if (toggleBtn) toggleBtn.textContent = showCompleted ? 'Hide Completed' : 'Show Completed';
+  grid.innerHTML = EVENTS.map((e, idx) => `
+    <div class="event-card ${e.label}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="event-date ${e.label}">${e.date}</div>
+        <span style="font-size:10px;font-weight:700;color:var(--text-secondary);background:rgba(0,0,0,0.06);border-radius:10px;padding:1px 7px;margin-left:6px;flex-shrink:0;">E${idx+1}</span>
+      </div>
+      <div class="event-title">${e.title}</div>
+      <div class="event-firm">${e.firm}</div>
+      <div style="margin-top:4px;"><span class="badge badge-${e.label==='overdue'?'unpaid':'pending'}" style="font-size:10px;">${e.type}</span></div>
+    </div>
+  `).join('');
 }
 
 // ─── BUDGET SUMMARY ──────────────────────────────────────────────────────────
@@ -1338,33 +1252,23 @@ function updatePriorityChart(tasks) {
 
 // ─── OPEN ISSUES ─────────────────────────────────────────────────────────────
 function renderOpenIssues() {
-  const showCompleted = STATE.showCompletedIssues;
-  let completedCount = 0;
-  const cards = OPEN_ISSUES.map(i => {
-    const done = !!STATE.completedIssues[i.id];
-    if (done) completedCount++;
-    if (done && !showCompleted) return '';
+  const html = OPEN_ISSUES.map((i, idx) => {
     const isUrgent = i.priority === 'URGENT';
     return `
-      <div class="event-card ${isUrgent ? 'overdue' : 'imminent'}" style="padding:12px 14px;${done ? 'opacity:0.42;' : ''}">
+      <div class="event-card ${isUrgent ? 'overdue' : 'imminent'}" style="padding:12px 14px;">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px;">
-          <div style="font-weight:600;font-size:13px;${done ? 'text-decoration:line-through;color:var(--text-secondary);' : ''}">${i.title}</div>
-          <span class="badge ${isUrgent ? 'badge-urgent' : 'badge-high'}" style="white-space:nowrap;flex-shrink:0;">${i.priority}</span>
+          <div style="font-weight:600;font-size:13px;">${i.title}</div>
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+            <span style="font-size:10px;font-weight:700;color:var(--text-secondary);background:rgba(0,0,0,0.06);border-radius:10px;padding:1px 7px;">I${idx+1}</span>
+            <span class="badge ${isUrgent ? 'badge-urgent' : 'badge-high'}">${i.priority}</span>
+          </div>
         </div>
         <div style="font-size:11px;color:var(--text-secondary);margin-bottom:3px;">👤 ${i.owner} &nbsp;·&nbsp; 📅 ${i.date} &nbsp;·&nbsp; 📋 ${i.source}</div>
-        <div style="font-size:11px;color:var(--text-primary);margin-bottom:8px;">${i.notes}</div>
-        <div style="text-align:right;">
-          <button onclick="markIssueDone('${i.id}')" style="font-size:10px;padding:2px 9px;border-radius:10px;border:1px solid ${done?'#1e8449':'#d0c8c0'};background:${done?'#e8f5e9':'#faf7f3'};color:${done?'#1e8449':'#888'};cursor:pointer;font-weight:600;transition:all .15s;">${done ? '✓ Done' : 'Mark Done'}</button>
-        </div>
+        <div style="font-size:11px;color:var(--text-primary);">${i.notes}</div>
       </div>`;
   }).join('');
   document.getElementById('open-issues-grid').innerHTML =
-    `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px;">${cards || '<div style="color:var(--text-secondary);font-size:12px;padding:8px 0;">No open issues.</div>'}</div>`;
-  // Update count label and toggle button
-  const countEl = document.getElementById('issues-completed-count');
-  const toggleBtn = document.getElementById('toggle-completed-issues-btn');
-  if (countEl) countEl.textContent = completedCount ? `(${completedCount} completed)` : '';
-  if (toggleBtn) toggleBtn.textContent = showCompleted ? 'Hide Completed' : 'Show Completed';
+    `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px;">${html}</div>`;
 }
 
 // ─── DECISIONS LOG ────────────────────────────────────────────────────────────
