@@ -439,13 +439,22 @@
 
   <!-- OPEN ISSUES -->
   <section class="full-width table-section">
-    <div class="section-title">🚨 Open Issues &amp; Unresolved Questions</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div class="section-title" style="margin-bottom:0;">🚨 Open Issues &amp; Unresolved Questions <span id="issues-completed-count" style="font-size:11px;color:var(--text-secondary);font-weight:400;"></span></div>
+      <button id="toggle-completed-issues-btn" onclick="toggleShowCompletedIssues()" style="padding:4px 12px;border:1px solid #e0d5ca;border-radius:14px;background:#faf7f3;font-size:11px;font-weight:600;color:var(--text-secondary);cursor:pointer;">Show Completed</button>
+    </div>
     <div id="open-issues-grid"></div>
   </section>
 
   <!-- UPCOMING DEADLINES -->
   <section class="full-width table-section">
-    <div class="section-title">⏰ Upcoming Events &amp; Deadlines — Next 30 Days</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div class="section-title" style="margin-bottom:0;">⏰ Upcoming Events &amp; Deadlines — Next 30 Days <span id="events-completed-count" style="font-size:11px;color:var(--text-secondary);font-weight:400;"></span></div>
+      <div style="display:flex;gap:8px;">
+        <button id="toggle-completed-events-btn" onclick="toggleShowCompletedEvents()" style="padding:4px 12px;border:1px solid #e0d5ca;border-radius:14px;background:#faf7f3;font-size:11px;font-weight:600;color:var(--text-secondary);cursor:pointer;">Show Completed</button>
+        <button onclick="saveToFile()" style="padding:4px 12px;border:1px solid #1e8449;border-radius:14px;background:#f0f7f0;font-size:11px;font-weight:600;color:#1e8449;cursor:pointer;">💾 Save to File</button>
+      </div>
+    </div>
     <div class="events-grid" id="events-grid"></div>
   </section>
 
@@ -829,7 +838,9 @@ function loadState() {
   catch(e) { return {}; }
 }
 let STATE = loadState();
-['taskStatus','taskPriority','phaseApproved','paymentPaid','permitStatus'].forEach(k => { if (!STATE[k]) STATE[k] = {}; });
+['taskStatus','taskPriority','phaseApproved','paymentPaid','permitStatus','completedEvents','completedIssues'].forEach(k => { if (!STATE[k]) STATE[k] = {}; });
+if (STATE.showCompletedEvents  === undefined) STATE.showCompletedEvents  = false;
+if (STATE.showCompletedIssues  === undefined) STATE.showCompletedIssues  = false;
 
 function saveState() {
   try { localStorage.setItem('srw-dashboard-v1', JSON.stringify(STATE)); } catch(e) {}
@@ -872,9 +883,82 @@ function togglePermitStatus(idx) {
 }
 function resetAllState() {
   if (!confirm('Reset all status changes back to defaults?')) return;
-  STATE = { taskStatus:{}, taskPriority:{}, phaseApproved:{}, paymentPaid:{}, permitStatus:{} };
+  STATE = { taskStatus:{}, taskPriority:{}, phaseApproved:{}, paymentPaid:{}, permitStatus:{}, completedEvents:{}, completedIssues:{}, showCompletedEvents:false, showCompletedIssues:false };
   saveState();
   applyFilters(); renderPhaseTable(); renderPaymentSchedule(); renderPermits();
+}
+
+// ─── MARK DONE — EVENTS & OPEN ISSUES ────────────────────────────────────────
+function markEventDone(idx) {
+  STATE.completedEvents[idx] = !STATE.completedEvents[idx];
+  saveState(); renderEvents();
+}
+function markIssueDone(id) {
+  STATE.completedIssues[id] = !STATE.completedIssues[id];
+  saveState(); renderOpenIssues();
+}
+function toggleShowCompletedEvents() {
+  STATE.showCompletedEvents = !STATE.showCompletedEvents;
+  saveState(); renderEvents();
+}
+function toggleShowCompletedIssues() {
+  STATE.showCompletedIssues = !STATE.showCompletedIssues;
+  saveState(); renderOpenIssues();
+}
+
+// ─── SAVE TO FILE ─────────────────────────────────────────────────────────────
+// Pre-fetch the HTML source so Save to File can generate an updated copy
+let _htmlSource = null;
+(async () => {
+  try { const r = await fetch(location.href); _htmlSource = await r.text(); } catch(e) {}
+})();
+
+async function saveToFile() {
+  if (!_htmlSource) {
+    alert('Source file not available — ensure the dashboard is opened as a local file, then try again.');
+    return;
+  }
+  const completedEventCount = Object.values(STATE.completedEvents).filter(Boolean).length;
+  const completedIssueCount = Object.values(STATE.completedIssues).filter(Boolean).length;
+  if (!completedEventCount && !completedIssueCount) {
+    alert('Nothing marked as done yet — mark items complete first, then save.');
+    return;
+  }
+  if (!confirm(`This will download an updated SRW-dashboard.html with ${completedEventCount + completedIssueCount} completed item(s) permanently removed.\n\nReplace the file in your folder with the downloaded version to make it permanent.`)) return;
+
+  const activeEvents = EVENTS.filter((_, idx) => !STATE.completedEvents[idx]);
+  const activeIssues = OPEN_ISSUES.filter(i => !STATE.completedIssues[i.id]);
+
+  let src = _htmlSource;
+
+  // Replace OPEN_ISSUES array in source
+  const oiStart = src.indexOf('const OPEN_ISSUES = [');
+  const oiEnd   = src.indexOf('\n];', oiStart) + 3;
+  const newOI   = 'const OPEN_ISSUES = [\n' + activeIssues.map(i => '  ' + JSON.stringify(i)).join(',\n') + '\n];';
+  src = src.slice(0, oiStart) + newOI + src.slice(oiEnd);
+
+  // Replace EVENTS array in source (re-find after prior replacement)
+  const evStart = src.indexOf('const EVENTS = [');
+  const evEnd   = src.indexOf('\n];', evStart) + 3;
+  const newEV   = 'const EVENTS = [\n' + activeEvents.map(e => '  ' + JSON.stringify(e)).join(',\n') + '\n];';
+  src = src.slice(0, evStart) + newEV + src.slice(evEnd);
+
+  // Clear completed state
+  STATE.completedEvents  = {};
+  STATE.completedIssues  = {};
+  STATE.showCompletedEvents = false;
+  STATE.showCompletedIssues = false;
+  saveState();
+  renderEvents();
+  renderOpenIssues();
+
+  const blob = new Blob([src], { type: 'text/html' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'SRW-dashboard.html';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 // ─── CHARTS ──────────────────────────────────────────────────────────────────
@@ -1022,14 +1106,29 @@ function renderKPIs(tasks) {
 // ─── EVENTS ─────────────────────────────────────────────────────────────────
 function renderEvents() {
   const grid = document.getElementById('events-grid');
-  grid.innerHTML = EVENTS.map(e => `
-    <div class="event-card ${e.label}">
-      <div class="event-date ${e.label}">${e.date}</div>
-      <div class="event-title">${e.title}</div>
-      <div class="event-firm">${e.firm}</div>
-      <div style="margin-top:4px;"><span class="badge badge-${e.label==='overdue'?'unpaid':'pending'}" style="font-size:10px;">${e.type}</span></div>
-    </div>
-  `).join('');
+  const showCompleted = STATE.showCompletedEvents;
+  let completedCount = 0;
+  const cards = EVENTS.map((e, idx) => {
+    const done = !!STATE.completedEvents[idx];
+    if (done) completedCount++;
+    if (done && !showCompleted) return '';
+    return `
+      <div class="event-card ${e.label}" style="${done ? 'opacity:0.42;' : ''}">
+        <div class="event-date ${e.label}" style="${done ? 'text-decoration:line-through;' : ''}">${e.date}</div>
+        <div class="event-title" style="${done ? 'text-decoration:line-through;color:var(--text-secondary);' : ''}">${e.title}</div>
+        <div class="event-firm">${e.firm}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
+          <span class="badge badge-${e.label==='overdue'?'unpaid':'pending'}" style="font-size:10px;">${e.type}</span>
+          <button onclick="markEventDone(${idx})" style="font-size:10px;padding:2px 9px;border-radius:10px;border:1px solid ${done?'#1e8449':'#d0c8c0'};background:${done?'#e8f5e9':'#faf7f3'};color:${done?'#1e8449':'#888'};cursor:pointer;font-weight:600;transition:all .15s;">${done ? '✓ Done' : 'Mark Done'}</button>
+        </div>
+      </div>`;
+  }).join('');
+  grid.innerHTML = cards || '<div style="color:var(--text-secondary);font-size:12px;padding:8px 0;">No active items.</div>';
+  // Update count label and toggle button
+  const countEl = document.getElementById('events-completed-count');
+  const toggleBtn = document.getElementById('toggle-completed-events-btn');
+  if (countEl) countEl.textContent = completedCount ? `(${completedCount} completed)` : '';
+  if (toggleBtn) toggleBtn.textContent = showCompleted ? 'Hide Completed' : 'Show Completed';
 }
 
 // ─── BUDGET SUMMARY ──────────────────────────────────────────────────────────
@@ -1248,20 +1347,33 @@ function updatePriorityChart(tasks) {
 
 // ─── OPEN ISSUES ─────────────────────────────────────────────────────────────
 function renderOpenIssues() {
-  const html = OPEN_ISSUES.map(i => {
+  const showCompleted = STATE.showCompletedIssues;
+  let completedCount = 0;
+  const cards = OPEN_ISSUES.map(i => {
+    const done = !!STATE.completedIssues[i.id];
+    if (done) completedCount++;
+    if (done && !showCompleted) return '';
     const isUrgent = i.priority === 'URGENT';
     return `
-      <div class="event-card ${isUrgent ? 'overdue' : 'imminent'}" style="padding:12px 14px;">
+      <div class="event-card ${isUrgent ? 'overdue' : 'imminent'}" style="padding:12px 14px;${done ? 'opacity:0.42;' : ''}">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px;">
-          <div style="font-weight:600;font-size:13px;">${i.title}</div>
+          <div style="font-weight:600;font-size:13px;${done ? 'text-decoration:line-through;color:var(--text-secondary);' : ''}">${i.title}</div>
           <span class="badge ${isUrgent ? 'badge-urgent' : 'badge-high'}" style="white-space:nowrap;flex-shrink:0;">${i.priority}</span>
         </div>
         <div style="font-size:11px;color:var(--text-secondary);margin-bottom:3px;">👤 ${i.owner} &nbsp;·&nbsp; 📅 ${i.date} &nbsp;·&nbsp; 📋 ${i.source}</div>
-        <div style="font-size:11px;color:var(--text-primary);">${i.notes}</div>
+        <div style="font-size:11px;color:var(--text-primary);margin-bottom:8px;">${i.notes}</div>
+        <div style="text-align:right;">
+          <button onclick="markIssueDone('${i.id}')" style="font-size:10px;padding:2px 9px;border-radius:10px;border:1px solid ${done?'#1e8449':'#d0c8c0'};background:${done?'#e8f5e9':'#faf7f3'};color:${done?'#1e8449':'#888'};cursor:pointer;font-weight:600;transition:all .15s;">${done ? '✓ Done' : 'Mark Done'}</button>
+        </div>
       </div>`;
   }).join('');
   document.getElementById('open-issues-grid').innerHTML =
-    `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px;">${html}</div>`;
+    `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px;">${cards || '<div style="color:var(--text-secondary);font-size:12px;padding:8px 0;">No open issues.</div>'}</div>`;
+  // Update count label and toggle button
+  const countEl = document.getElementById('issues-completed-count');
+  const toggleBtn = document.getElementById('toggle-completed-issues-btn');
+  if (countEl) countEl.textContent = completedCount ? `(${completedCount} completed)` : '';
+  if (toggleBtn) toggleBtn.textContent = showCompleted ? 'Hide Completed' : 'Show Completed';
 }
 
 // ─── DECISIONS LOG ────────────────────────────────────────────────────────────
