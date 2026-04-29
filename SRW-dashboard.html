@@ -907,82 +907,58 @@ function toggleShowCompletedIssues() {
 }
 
 // ─── SAVE TO FILE ─────────────────────────────────────────────────────────────
-// Pre-fetch the HTML source so Save to File can generate an updated copy
-let _htmlSource = null;
-(async () => {
-  try { const r = await fetch(location.href); _htmlSource = await r.text(); } catch(e) {}
-})();
 
 async function saveToFile() {
-  if (!_htmlSource) {
-    alert('Source file not available — ensure the dashboard is opened as a local file, then try again.');
-    return;
-  }
-  const completedEventCount = Object.values(STATE.completedEvents).filter(Boolean).length;
-  const completedIssueCount = Object.values(STATE.completedIssues).filter(Boolean).length;
-  if (!completedEventCount && !completedIssueCount) {
-    alert('Nothing marked as done yet — mark items complete first, then save.');
-    return;
-  }
-  if (!confirm(`This will download an updated SRW-dashboard.html with ${completedEventCount + completedIssueCount} completed item(s) permanently removed.\n\nReplace the file in your folder with the downloaded version to make it permanent.`)) return;
-
   const activeEvents = EVENTS.filter((_, idx) => !STATE.completedEvents[idx]);
   const activeIssues = OPEN_ISSUES.filter(i => !STATE.completedIssues[i.id]);
+  const removedCount = (EVENTS.length - activeEvents.length) + (OPEN_ISSUES.length - activeIssues.length);
 
-  let src = _htmlSource;
+  if (!removedCount) { alert('Nothing marked as done yet.'); return; }
 
-  // Replace OPEN_ISSUES array in source
-  const oiStart = src.indexOf('const OPEN_ISSUES = [');
-  const oiEnd   = src.indexOf('\n];', oiStart) + 3;
-  const newOI   = 'const OPEN_ISSUES = [\n' + activeIssues.map(i => '  ' + JSON.stringify(i)).join(',\n') + '\n];';
-  src = src.slice(0, oiStart) + newOI + src.slice(oiEnd);
-
-  // Replace EVENTS array in source (re-find after prior replacement)
-  const evStart = src.indexOf('const EVENTS = [');
-  const evEnd   = src.indexOf('\n];', evStart) + 3;
-  const newEV   = 'const EVENTS = [\n' + activeEvents.map(e => '  ' + JSON.stringify(e)).join(',\n') + '\n];';
-  src = src.slice(0, evStart) + newEV + src.slice(evEnd);
-
-  // Clear completed state
-  STATE.completedEvents  = {};
-  STATE.completedIssues  = {};
-  STATE.showCompletedEvents = false;
-  STATE.showCompletedIssues = false;
-  saveState();
-  renderEvents();
-  renderOpenIssues();
-
-  const blob = new Blob([src], { type: 'text/html' });
-  let savedInPlace = false;
-
-  // Try File System Access API (works on https:// or localhost; may be blocked on file://)
-  if (window.showSaveFilePicker) {
+  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+    // Served via local server: fetch source, patch arrays, POST back
     try {
-      const handle = await window.showSaveFilePicker({
-        suggestedName: 'SRW-dashboard.html',
-        types: [{ description: 'HTML file', accept: { 'text/html': ['.html'] } }]
-      });
-      const writable = await handle.createWritable();
-      await writable.write(blob);
-      await writable.close();
-      savedInPlace = true;
-      const f = document.getElementById('save-flash');
-      if (f) { f.textContent = '💾 File saved'; f.classList.add('show'); clearTimeout(f._t); f._t = setTimeout(() => { f.classList.remove('show'); f.textContent = '💾 Saved'; }, 2200); }
-    } catch(e) {
-      if (e.name === 'AbortError') return; // user cancelled picker — do nothing
-      // SecurityError or other — fall through to download
-    }
-  }
+      let src = await fetch(location.href).then(r => r.text());
 
-  if (!savedInPlace) {
-    // Download fallback — browser security blocks direct write on file:// URLs
-    const url = URL.createObjectURL(blob);
-    const a   = document.createElement('a');
-    a.href = url; a.download = 'SRW-dashboard.html';
-    document.body.appendChild(a); a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    alert('SRW-dashboard.html has been downloaded.\n\nReplace the file in your She Rode West Dashboard folder with this copy — then push to GitHub as normal.');
+      const oiStart = src.indexOf('const OPEN_ISSUES = [');
+      const oiEnd   = src.indexOf('\n];', oiStart) + 3;
+      src = src.slice(0, oiStart)
+        + 'const OPEN_ISSUES = [\n' + activeIssues.map(i => '  ' + JSON.stringify(i)).join(',\n') + '\n];'
+        + src.slice(oiEnd);
+
+      const evStart = src.indexOf('const EVENTS = [');
+      const evEnd   = src.indexOf('\n];', evStart) + 3;
+      src = src.slice(0, evStart)
+        + 'const EVENTS = [\n' + activeEvents.map(e => '  ' + JSON.stringify(e)).join(',\n') + '\n];'
+        + src.slice(evEnd);
+
+      const res    = await fetch('/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ html: src }) });
+      const result = await res.json();
+      if (!result.ok) throw new Error(result.error || 'unknown');
+
+      STATE.completedEvents = {}; STATE.completedIssues = {};
+      STATE.showCompletedEvents = false; STATE.showCompletedIssues = false;
+      saveState(); renderEvents(); renderOpenIssues();
+
+      const f = document.getElementById('save-flash');
+      if (f) {
+        f.textContent = result.synced_gd ? '💾 Saved + synced to Drive' : '💾 Saved to file';
+        f.classList.add('show'); clearTimeout(f._t);
+        f._t = setTimeout(() => { f.classList.remove('show'); f.textContent = '💾 Saved'; }, 2500);
+      }
+    } catch(e) {
+      alert('Save failed: ' + e.message + '\n\nIs serve-dashboard.command still running?');
+    }
+
+  } else {
+    // Opened as file:// — copy item list to clipboard for Claude
+    const lines = ['Remove these completed items from the dashboard:'];
+    EVENTS.forEach((e, idx) => { if (STATE.completedEvents[idx]) lines.push('EVENT: ' + e.title); });
+    OPEN_ISSUES.forEach(i => { if (STATE.completedIssues[i.id]) lines.push('ISSUE: ' + i.title); });
+    const msg = lines.join('\n');
+    navigator.clipboard.writeText(msg)
+      .then(() => alert('Copied!\n\nPaste to Claude in Cowork — or open via serve-dashboard.command for automatic saving.'))
+      .catch(() => prompt('Copy this and paste to Claude in Cowork:', msg));
   }
 }
 
