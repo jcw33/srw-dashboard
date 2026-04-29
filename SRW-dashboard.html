@@ -727,14 +727,12 @@ const PAYMENT_SCHEDULE = [
 ];
 
 const EVENTS = [
-  { date: "TODAY — 4/23", label: "overdue", title: "⚠️ Reply to Heleo: availability for mezzanine coordination call", firm: "Jon Weber — options: 4/23 9/10/12am or 4/27 10am/11am/1pm", type: "Action Required" },
-  { date: "ASAP", label: "overdue", title: "Decide: Bifold door mirror — $40K / 12 weeks vs. keep as-built", firm: "Jon Weber — door is being crated for site; Suffolk needs direction", type: "Decision Required" },
-  { date: "ASAP", label: "overdue", title: "Provide Equipment List (food service + mechanical)", firm: "Basile + REB Design — Required per Basile §3.2", type: "Deliverable" },
-  { date: "ASAP", label: "imminent", title: "⚠️ Respond to Patterson: framing scheme service platform + suspension questions", firm: "Patterson Engineering — coordinate with REB on hood/equipment weights first", type: "Structural Decision" },
-  { date: "This week (4/23–4/27)", label: "imminent", title: "Mezzanine coordination call — spiral stair + catwalk concept", firm: "Heleo + Patterson + MDC + REB Design + Basile", type: "Meeting" },
-  { date: "End of April 2026", label: "upcoming", title: "REB Food Service Construction Set", firm: "REB Design — pending walk-in cooler layout approval", type: "Milestone" },
-  { date: "Mid-Summer 2026", label: "upcoming", title: "Construction Start Target", firm: "Suffolk / GC", type: "Milestone" },
-  { date: "Feb 1, 2027", label: "info", title: "🤠 Restaurant Opening Target", firm: "She Rode West — 575 Upas St, San Diego", type: "Milestone" },
+  {"date":"TODAY — 4/23","label":"overdue","title":"⚠️ Reply to Heleo: availability for mezzanine coordination call","firm":"Jon Weber — options: 4/23 9/10/12am or 4/27 10am/11am/1pm","type":"Action Required"},
+  {"date":"ASAP","label":"overdue","title":"Provide Equipment List (food service + mechanical)","firm":"Basile + REB Design — Required per Basile §3.2","type":"Deliverable"},
+  {"date":"ASAP","label":"imminent","title":"⚠️ Respond to Patterson: framing scheme service platform + suspension questions","firm":"Patterson Engineering — coordinate with REB on hood/equipment weights first","type":"Structural Decision"},
+  {"date":"End of April 2026","label":"upcoming","title":"REB Food Service Construction Set","firm":"REB Design — pending walk-in cooler layout approval","type":"Milestone"},
+  {"date":"Mid-Summer 2026","label":"upcoming","title":"Construction Start Target","firm":"Suffolk / GC","type":"Milestone"},
+  {"date":"Feb 1, 2027","label":"info","title":"🤠 Restaurant Opening Target","firm":"She Rode West — 575 Upas St, San Diego","type":"Milestone"}
 ];
 
 // ─── CONTACTS ────────────────────────────────────────────────────────────────
@@ -764,11 +762,11 @@ const CONTACTS = [
 
 // ─── OPEN ISSUES ──────────────────────────────────────────────────────────────
 const OPEN_ISSUES = [
-  { id: "OI-11", date: "4/22/2026", source: "Email: Proposed Mezzanine Access Revision (Barbara Leon / Heleo)", title: "Mezzanine access revision: team feedback required on spiral staircase + catwalk concept", owner: "All consultants (Patterson, MDC, REB, Basile)", priority: "URGENT", notes: "4/22/26: Heleo proposes compact spiral stair at NW corner of dining room plus low-profile steel catwalk to mezzanine. Removes furring wall covering fire dept standpipe. Preserves all 3 ground-level restrooms. Upper area reclassified as limited-occupant storage / service access with hatch. Jon gave initial approval; team feedback now needed. STRUCTURAL: spiral stair support/anchorage, independent column or floor reinforcement, catwalk framing + guardrail, impacts of removing former stair opening. MECHANICAL: clearances at new stair/catwalk vs. overhead ductwork/piping, impacts to equipment/ducting at platform with original stair removed, PCU + adjacent equipment service clearances, WIP layout of all mech/ducting runs to identify leftover storage pockets. FOOD SERVICE: revised dry storage quantities between mezzanine shelving and recovered lower-level zone, lockers/storage planning at mezzanine (REB to lay out once walls + stair removal are confirmed), access hatch location (preferred: full-height wall access panel in mezzanine storage area). BASILE: stair guardrail materiality/expression integration with overall concept, fabrication challenges, coordination near existing standpipe / FDC enclosure, dining impacts + visual presence from guest area. Heleo requested coordination call ASAP. Jon to reply with availability: 4/22 4PM, 4/23 9/10/12, 4/27 10/11/1." },
-  { id: "OI-03", date: "3/24/2026", source: "MEP Kickoff", title: "REB to send electrostatic PCU drawings to Marino (MEP)", owner: "REB Design → Marino", priority: "HIGH", notes: "Needed to coordinate duct collar on island hood and PCU duct connection." },
-  { id: "OI-04", date: "3/30/2026", source: "Email: MEP Kickoff thread", title: "PCU sprinkler clearance — awaiting Hiller response to courtesy review", owner: "Heleo → Jake Sutton (Hiller)", priority: "URGENT", notes: "PCU relocated at 4/1 site visit. Hiller (Jake Sutton) courtesy review still pending — must confirm new position clears 18\" sprinkler zone before finalizing. Barbara Leon sent full package 3/31 (PCU cut sheet, floor plan, RCP). Copy Vanessa Kennedy + Brendan Mingle on all Hiller correspondence." },
-  { id: "OI-05", date: "3/24/2026", source: "MEP Kickoff", title: "Decorative lighting + BOH lighting division", owner: "Basile Studio", priority: "HIGH", notes: "Basile to provide update — determines MEP circuit planning." },
-  { id: "OI-07", date: "4/1/2026", source: "4/1 Site Visit", title: "Grease interceptor line may need ~12\" drop — under investigation", owner: "MDC (Carlos Santiago)", priority: "HIGH", notes: "4/1/26: Carlos Santiago (MDC) flagged that grease interceptor connection may require approximately 12-inch drop. Currently investigating. Must confirm before MEP rough-in coordination. Also confirm grease interceptor is shown on the permit set of plans." },
+  {"id":"OI-11","date":"4/22/2026","source":"Email: Proposed Mezzanine Access Revision (Barbara Leon / Heleo)","title":"Mezzanine access revision: team feedback required on spiral staircase + catwalk concept","owner":"All consultants (Patterson, MDC, REB, Basile)","priority":"URGENT","notes":"4/22/26: Heleo proposes compact spiral stair at NW corner of dining room plus low-profile steel catwalk to mezzanine. Removes furring wall covering fire dept standpipe. Preserves all 3 ground-level restrooms. Upper area reclassified as limited-occupant storage / service access with hatch. Jon gave initial approval; team feedback now needed. STRUCTURAL: spiral stair support/anchorage, independent column or floor reinforcement, catwalk framing + guardrail, impacts of removing former stair opening. MECHANICAL: clearances at new stair/catwalk vs. overhead ductwork/piping, impacts to equipment/ducting at platform with original stair removed, PCU + adjacent equipment service clearances, WIP layout of all mech/ducting runs to identify leftover storage pockets. FOOD SERVICE: revised dry storage quantities between mezzanine shelving and recovered lower-level zone, lockers/storage planning at mezzanine (REB to lay out once walls + stair removal are confirmed), access hatch location (preferred: full-height wall access panel in mezzanine storage area). BASILE: stair guardrail materiality/expression integration with overall concept, fabrication challenges, coordination near existing standpipe / FDC enclosure, dining impacts + visual presence from guest area. Heleo requested coordination call ASAP. Jon to reply with availability: 4/22 4PM, 4/23 9/10/12, 4/27 10/11/1."},
+  {"id":"OI-03","date":"3/24/2026","source":"MEP Kickoff","title":"REB to send electrostatic PCU drawings to Marino (MEP)","owner":"REB Design → Marino","priority":"HIGH","notes":"Needed to coordinate duct collar on island hood and PCU duct connection."},
+  {"id":"OI-04","date":"3/30/2026","source":"Email: MEP Kickoff thread","title":"PCU sprinkler clearance — awaiting Hiller response to courtesy review","owner":"Heleo → Jake Sutton (Hiller)","priority":"URGENT","notes":"PCU relocated at 4/1 site visit. Hiller (Jake Sutton) courtesy review still pending — must confirm new position clears 18\" sprinkler zone before finalizing. Barbara Leon sent full package 3/31 (PCU cut sheet, floor plan, RCP). Copy Vanessa Kennedy + Brendan Mingle on all Hiller correspondence."},
+  {"id":"OI-05","date":"3/24/2026","source":"MEP Kickoff","title":"Decorative lighting + BOH lighting division","owner":"Basile Studio","priority":"HIGH","notes":"Basile to provide update — determines MEP circuit planning."},
+  {"id":"OI-07","date":"4/1/2026","source":"4/1 Site Visit","title":"Grease interceptor line may need ~12\" drop — under investigation","owner":"MDC (Carlos Santiago)","priority":"HIGH","notes":"4/1/26: Carlos Santiago (MDC) flagged that grease interceptor connection may require approximately 12-inch drop. Currently investigating. Must confirm before MEP rough-in coordination. Also confirm grease interceptor is shown on the permit set of plans."}
 ];
 
 // ─── KEY DECISIONS ────────────────────────────────────────────────────────────
@@ -915,50 +913,48 @@ async function saveToFile() {
 
   if (!removedCount) { alert('Nothing marked as done yet.'); return; }
 
-  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-    // Served via local server: fetch source, patch arrays, POST back
-    try {
-      let src = await fetch(location.href).then(r => r.text());
+  const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 
-      const oiStart = src.indexOf('const OPEN_ISSUES = [');
-      const oiEnd   = src.indexOf('\n];', oiStart) + 3;
-      src = src.slice(0, oiStart)
-        + 'const OPEN_ISSUES = [\n' + activeIssues.map(i => '  ' + JSON.stringify(i)).join(',\n') + '\n];'
-        + src.slice(oiEnd);
+  if (!isLocal) {
+    // On GitHub Pages or file:// — saving not possible from here
+    alert("You're viewing the shared link.\n\nTo save permanently:\n1. Open serve-dashboard.command from your She Rode West Dashboard folder\n2. Use the localhost tab that opens\n3. Mark items done there and press Save to File\n4. Push to GitHub as usual\n\nYour marks here are NOT lost — they're saved in this browser's memory.");
+    return;
+  }
 
-      const evStart = src.indexOf('const EVENTS = [');
-      const evEnd   = src.indexOf('\n];', evStart) + 3;
-      src = src.slice(0, evStart)
-        + 'const EVENTS = [\n' + activeEvents.map(e => '  ' + JSON.stringify(e)).join(',\n') + '\n];'
-        + src.slice(evEnd);
+  // On localhost — fetch source, patch arrays, POST back to server
+  try {
+    let src = await fetch(location.href).then(r => r.text());
 
-      const res    = await fetch('/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ html: src }) });
-      const result = await res.json();
-      if (!result.ok) throw new Error(result.error || 'unknown');
+    const oiStart = src.indexOf('const OPEN_ISSUES = [');
+    const oiEnd   = src.indexOf('\n];', oiStart) + 3;
+    src = src.slice(0, oiStart)
+      + 'const OPEN_ISSUES = [\n' + activeIssues.map(i => '  ' + JSON.stringify(i)).join(',\n') + '\n];'
+      + src.slice(oiEnd);
 
-      STATE.completedEvents = {}; STATE.completedIssues = {};
-      STATE.showCompletedEvents = false; STATE.showCompletedIssues = false;
-      saveState(); renderEvents(); renderOpenIssues();
+    const evStart = src.indexOf('const EVENTS = [');
+    const evEnd   = src.indexOf('\n];', evStart) + 3;
+    src = src.slice(0, evStart)
+      + 'const EVENTS = [\n' + activeEvents.map(e => '  ' + JSON.stringify(e)).join(',\n') + '\n];'
+      + src.slice(evEnd);
 
-      const f = document.getElementById('save-flash');
-      if (f) {
-        f.textContent = result.synced_gd ? '💾 Saved + synced to Drive' : '💾 Saved to file';
-        f.classList.add('show'); clearTimeout(f._t);
-        f._t = setTimeout(() => { f.classList.remove('show'); f.textContent = '💾 Saved'; }, 2500);
-      }
-    } catch(e) {
-      alert('Save failed: ' + e.message + '\n\nIs serve-dashboard.command still running?');
+    const res    = await fetch('/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ html: src }) });
+    const result = await res.json();
+    if (!result.ok) throw new Error(result.error || 'unknown');
+
+    // Only clear state after confirmed save
+    STATE.completedEvents = {}; STATE.completedIssues = {};
+    STATE.showCompletedEvents = false; STATE.showCompletedIssues = false;
+    saveState(); renderEvents(); renderOpenIssues();
+
+    const f = document.getElementById('save-flash');
+    if (f) {
+      f.textContent = result.synced_gd ? '💾 Saved + synced to Drive' : '💾 Saved to file';
+      f.classList.add('show'); clearTimeout(f._t);
+      f._t = setTimeout(() => { f.classList.remove('show'); f.textContent = '💾 Saved'; }, 2500);
     }
-
-  } else {
-    // Opened as file:// — copy item list to clipboard for Claude
-    const lines = ['Remove these completed items from the dashboard:'];
-    EVENTS.forEach((e, idx) => { if (STATE.completedEvents[idx]) lines.push('EVENT: ' + e.title); });
-    OPEN_ISSUES.forEach(i => { if (STATE.completedIssues[i.id]) lines.push('ISSUE: ' + i.title); });
-    const msg = lines.join('\n');
-    navigator.clipboard.writeText(msg)
-      .then(() => alert('Copied!\n\nPaste to Claude in Cowork — or open via serve-dashboard.command for automatic saving.'))
-      .catch(() => prompt('Copy this and paste to Claude in Cowork:', msg));
+  } catch(e) {
+    // Don't clear state — let user try again
+    alert('Save failed: ' + e.message + '\n\nMake sure serve-dashboard.command is still running.');
   }
 }
 
