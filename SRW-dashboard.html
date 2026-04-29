@@ -953,9 +953,10 @@ async function saveToFile() {
   renderOpenIssues();
 
   const blob = new Blob([src], { type: 'text/html' });
+  let savedInPlace = false;
 
+  // Try File System Access API (works on https:// or localhost; may be blocked on file://)
   if (window.showSaveFilePicker) {
-    // File System Access API — lets user save directly over the original file
     try {
       const handle = await window.showSaveFilePicker({
         suggestedName: 'SRW-dashboard.html',
@@ -964,19 +965,24 @@ async function saveToFile() {
       const writable = await handle.createWritable();
       await writable.write(blob);
       await writable.close();
+      savedInPlace = true;
       const f = document.getElementById('save-flash');
       if (f) { f.textContent = '💾 File saved'; f.classList.add('show'); clearTimeout(f._t); f._t = setTimeout(() => { f.classList.remove('show'); f.textContent = '💾 Saved'; }, 2200); }
     } catch(e) {
-      if (e.name !== 'AbortError') alert('Save failed: ' + e.message);
+      if (e.name === 'AbortError') return; // user cancelled picker — do nothing
+      // SecurityError or other — fall through to download
     }
-  } else {
-    // Fallback for browsers without File System Access API
+  }
+
+  if (!savedInPlace) {
+    // Download fallback — browser security blocks direct write on file:// URLs
     const url = URL.createObjectURL(blob);
     const a   = document.createElement('a');
     a.href = url; a.download = 'SRW-dashboard.html';
     document.body.appendChild(a); a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    alert('SRW-dashboard.html has been downloaded.\n\nReplace the file in your She Rode West Dashboard folder with this copy — then push to GitHub as normal.');
   }
 }
 
