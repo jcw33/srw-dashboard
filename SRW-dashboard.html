@@ -922,23 +922,13 @@ async function saveToFile() {
     return;
   }
 
-  // On localhost — fetch source, patch arrays, POST back to server
+  // On localhost — send active arrays to server; Python handles file rewrite
   try {
-    let src = await fetch(location.href).then(r => r.text());
-
-    const oiStart = src.indexOf('const OPEN_ISSUES = [');
-    const oiEnd   = src.indexOf('\n];', oiStart) + 3;
-    src = src.slice(0, oiStart)
-      + 'const OPEN_ISSUES = [\n' + activeIssues.map(i => '  ' + JSON.stringify(i)).join(',\n') + '\n];'
-      + src.slice(oiEnd);
-
-    const evStart = src.indexOf('const EVENTS = [');
-    const evEnd   = src.indexOf('\n];', evStart) + 3;
-    src = src.slice(0, evStart)
-      + 'const EVENTS = [\n' + activeEvents.map(e => '  ' + JSON.stringify(e)).join(',\n') + '\n];'
-      + src.slice(evEnd);
-
-    const res    = await fetch('/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ html: src }) });
+    const res    = await fetch('/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ active_events: activeEvents, active_issues: activeIssues })
+    });
     const result = await res.json();
     if (!result.ok) throw new Error(result.error || 'unknown');
 
