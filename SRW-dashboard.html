@@ -931,7 +931,11 @@ async function saveToFile() {
     const result = await res.json();
     if (!result.ok) throw new Error(result.error || 'unknown');
 
-    // Only clear state after confirmed save
+    // Update in-memory arrays to match what was saved
+    EVENTS.splice(0, EVENTS.length, ...activeEvents);
+    OPEN_ISSUES.splice(0, OPEN_ISSUES.length, ...activeIssues);
+
+    // Clear completed state and re-render
     STATE.completedEvents = {}; STATE.completedIssues = {};
     STATE.showCompletedEvents = false; STATE.showCompletedIssues = false;
     saveState(); renderEvents(); renderOpenIssues();
